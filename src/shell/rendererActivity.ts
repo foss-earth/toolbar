@@ -21,3 +21,21 @@ export function attachRendererActivity(button: HTMLElement, source: RenderActivi
     button.title = originalTitle;
   };
 }
+
+export interface TileStreamingSource {
+  isStreamingTiles(): boolean;
+  onTilesStreamingChange(listener: (streaming: boolean) => void): () => void;
+}
+
+/** Bind tile loading independently of render activity, including loads already in progress. */
+export function attachTileStreamingActivity(button: HTMLElement, source: TileStreamingSource): () => void {
+  const update = (streaming: boolean): void => {
+    button.classList.toggle("is-streaming", streaming);
+  };
+  const unsubscribe = source.onTilesStreamingChange(update);
+  update(source.isStreamingTiles());
+  return () => {
+    unsubscribe();
+    button.classList.remove("is-streaming");
+  };
+}
