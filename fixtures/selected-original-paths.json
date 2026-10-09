@@ -1,0 +1,44 @@
+{
+  "format": "foss-earth.selected-original-paths",
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/foss-earth/foss-earth.github.io",
+    "revision": "90e23b3ee96f53ec5900afc5991a21fffa58649d",
+    "tree": "c68d1fabd9fce19e255ea89c65502666d0f74a27"
+  },
+  "owner": "foss-earth/toolbar",
+  "paths": [
+    "LICENSE",
+    "NOTICE",
+    "src/app/createGlobeApp.ts",
+    "src/hud/helpModal.ts",
+    "src/hud/hudButtonVisibility.test.ts",
+    "src/hud/hudButtonVisibility.ts",
+    "src/hud/northButton.ts",
+    "src/hud/performanceChips.ts",
+    "src/hud/positionReadout.test.ts",
+    "src/hud/positionReadout.ts",
+    "src/hud/statusHud.ts",
+    "src/settings/catalogue/index.ts",
+    "src/settings/catalogue/interface.ts",
+    "src/shell/fullscreen.test.ts",
+    "src/shell/fullscreen.ts",
+    "src/shell/hudBar.test.ts",
+    "src/shell/hudBar.ts",
+    "src/shell/hudBarFit.test.ts",
+    "src/shell/hudBarFit.ts",
+    "src/shell/mapDownloadHud.test.ts",
+    "src/shell/mapDownloadHud.ts",
+    "src/shell/rendererActivity.test.ts",
+    "src/shell/rendererActivity.ts",
+    "src/shell/scenesPanel.test.ts",
+    "src/shell/scenesPanel.ts",
+    "src/styles/hud.css"
+  ],
+  "status": "expanded source selection only; coordinator lineage and complete intended-ref attribution remain pending",
+  "notes": [
+    "Mixed createGlobeApp/catalogue/hud.css files retain only mapped Toolbar responsibilities; selection is not authority to copy their other feature behavior.",
+    "Renderer activity and omitted original button-visibility tests are newly included. No source history/index/ref action occurred.",
+    "Map rate, help visibility and supplied scene-credit HUD source paths newly selected; primary must integrate their cleaned ancestry before publication. Existing SOURCE_LINEAGE is retained unchanged and covers only its earlier selection."
+  ]
+}

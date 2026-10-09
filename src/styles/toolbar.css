@@ -1,0 +1,345 @@
+/* ─── HUD Bar ─────────────────────────────────────────────────────── */
+/*
+ * Screen-edge offsets for fixed HUD clusters.
+ *
+ * Defined here rather than in base.css because this stylesheet is the shared
+ * shell entry point (`foss-earth/shell.css`); downstream apps such as 0SFS
+ * import it without base.css, and an undefined var() would drop `bottom` to
+ * `auto` and unanchor the whole bar.
+ */
+:root {
+  /*
+   * Height of browser chrome overlaying the bottom of the page (Firefox
+   * Android's URL bar, Chrome's dynamic toolbar). Kept up to date by
+   * trackViewportInsets(); 0px whenever nothing is covering the page.
+   */
+  --foss-inset-bottom: 0px;
+
+  /* Gap between the viewport edge and screen-anchored HUD clusters. */
+  --foss-hud-gap: 16px;
+
+  /*
+   * Toolbar inset and notch safe area never stack — whichever is larger is the
+   * unusable strip — so max() rather than a sum.
+   */
+  --foss-hud-bottom: calc(var(--foss-hud-gap) + max(var(--foss-inset-bottom, 0px), env(safe-area-inset-bottom, 0px)));
+  --foss-hud-left: calc(var(--foss-hud-gap) + env(safe-area-inset-left, 0px));
+  --foss-hud-right: calc(var(--foss-hud-gap) + env(safe-area-inset-right, 0px));
+}
+
+/*
+ * The bar spans the bottom edge so its last slot, the host end, can sit at
+ * the right end and wrap with the rest on a narrow screen. Only its items take
+ * pointer input; the gap between them passes through to the world.
+ */
+.hud-bar {
+  position: fixed;
+  bottom: var(--foss-hud-bottom);
+  left: var(--foss-hud-left);
+  right: var(--foss-hud-right);
+  z-index: 10;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 3px;
+  font-family: "SF Mono", "Menlo", "Monaco", monospace;
+  pointer-events: none;
+}
+
+.hud-bar > * {
+  pointer-events: auto;
+}
+
+.hud-bar--fitted > *,
+.hud-bar--fitted .perf-chip {
+  flex-shrink: 0;
+}
+
+/* Keep omitted readings measurable without adding a row or taking focus. */
+.hud-bar--fitted [data-hud-overflow-hidden] {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.hud-bar [data-hud-choice-hidden] {
+  display: none;
+}
+
+/* Hosts mark their arbitrary credits/end slot; its contents stay feature-owned. */
+.hud-bar-end { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; min-width: 0; }
+.hud-bar--fitted > .hud-bar-end { order: 1000; min-width: 0; flex-shrink: 1; }
+
+.hud-chip,
+.hud-circle-button {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 8px;
+  background: rgba(10, 14, 22, 0.76);
+  color: rgba(239, 246, 255, 0.88);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(8px);
+  font: inherit;
+  font-size: 11px;
+  line-height: 1.1;
+  letter-spacing: 0;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.hud-chip-group {
+  display: contents;
+}
+
+.hud-chip--good {
+  border-color: rgba(34, 197, 94, 0.5);
+  background: rgba(5, 46, 22, 0.82);
+  color: rgba(187, 247, 208, 0.96);
+}
+
+.hud-chip--bad {
+  border-color: rgba(239, 68, 68, 0.54);
+  background: rgba(69, 10, 10, 0.82);
+  color: rgba(254, 202, 202, 0.96);
+}
+
+.hud-chip--fallback {
+  border-color: rgba(251, 191, 36, 0.5);
+  background: rgba(69, 39, 9, 0.84);
+  color: rgba(254, 243, 199, 0.96);
+}
+
+.hud-chip-button,
+.hud-circle-button {
+  appearance: none;
+  cursor: pointer;
+}
+
+.hud-chip-button:hover,
+.hud-circle-button:hover {
+  border-color: rgba(255, 255, 255, 0.32);
+  background: rgba(20, 26, 36, 0.9);
+}
+
+.hud-chip-button:active,
+.hud-circle-button:active {
+  background: rgba(30, 40, 56, 0.95);
+}
+
+/* The position readout: digits of one width, so a changing number does not
+   shift the readings after it, and an icon centred on the capitals of the
+   reading it marks. */
+.hud-position {
+  font-variant-numeric: tabular-nums;
+}
+
+.hud-position__icon {
+  width: 1.2em;
+  height: 1.2em;
+  margin-right: 0.25em;
+  vertical-align: -0.25em;
+}
+
+.hud-circle-button {
+  width: 30px;
+  padding: 0;
+  font-family: system-ui, -apple-system, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.north-button {
+  overflow: hidden;
+}
+
+.settings-button {
+  font-size: 18px;
+}
+
+/* ─── Theme button ──────────────────────────────────────────── */
+.theme-button {
+  font-size: 16px;
+}
+
+:root[data-theme="light"] .hud-chip,
+:root[data-theme="light"] .hud-circle-button {
+  border-color: rgba(15, 23, 42, 0.18);
+  background: rgba(248, 250, 252, 0.82);
+  color: rgba(15, 23, 42, 0.88);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.18);
+}
+
+:root[data-theme="light"] .hud-chip-button:hover,
+:root[data-theme="light"] .hud-circle-button:hover {
+  border-color: rgba(15, 23, 42, 0.32);
+  background: rgba(226, 232, 240, 0.94);
+}
+
+:root[data-theme="light"] .hud-chip-button:active,
+:root[data-theme="light"] .hud-circle-button:active {
+  background: rgba(203, 213, 225, 0.96);
+}
+
+/* ── Render-on-demand activity indicators ───────────────────────── */
+
+/*
+ * Shared comet outline for tile streaming and active FPS/renderer chips.
+ *
+ * Technique: double-background with @property-animated angle.
+ *   - Layer 1 (padding-box): solid chip background — fills the content area.
+ *   - Layer 2 (border-box):  conic-gradient spotlight — only visible through
+ *     the 2px transparent border, so it appears as a comet running the rail.
+ *
+ * CSS animates the registered angle without a JavaScript animation loop.
+ * Removing the activity state stops the animation when the scheduler idles.
+ */
+@property --hud-spin-angle {
+  syntax: "<angle>";
+  inherits: false;
+  initial-value: 0deg;
+}
+
+@keyframes hud-chip-spin {
+  to { --hud-spin-angle: 360deg; }
+}
+
+.hud-chip.is-streaming,
+.hud-chip.hud-chip--gpu.is-rendering,
+.hud-chip-group.is-active .perf-chip[data-perf-metric="fps"] {
+  border-color: transparent;
+  background:
+    /* chip fill — keep normal dark glass look */
+    linear-gradient(var(--hud-activity-fill, rgba(10, 14, 22, 0.76)), var(--hud-activity-fill, rgba(10, 14, 22, 0.76))) padding-box,
+    /* comet spotlight painted into the 2px border rail */
+    conic-gradient(
+      from var(--hud-spin-angle),
+      rgba(37, 99, 235, 0.06)  0deg,
+      rgba(37, 99, 235, 0.06)  210deg,
+      rgba(37, 99, 235, 0.7)   280deg,
+      rgba(125, 211, 252, 1)    320deg,
+      rgba(186, 230, 253, 1)    340deg,
+      rgba(125, 211, 252, 0.7)  355deg,
+      rgba(37, 99, 235, 0.06)  360deg
+    ) border-box;
+  animation: hud-chip-spin 1.6s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hud-chip.is-streaming,
+  .hud-chip.hud-chip--gpu.is-rendering,
+  .hud-chip-group.is-active .perf-chip[data-perf-metric="fps"] {
+    animation: none;
+    border-color: rgba(125, 211, 252, 0.55);
+    background: var(--hud-activity-fill, rgba(10, 14, 22, 0.76));
+  }
+}
+
+/* Green tint on the FPS chip while the scheduler is actively rendering. */
+.hud-chip-group.is-active .perf-chip[data-perf-metric="fps"] {
+  --hud-activity-fill: rgba(5, 46, 22, 0.78);
+  color: rgba(187, 247, 208, 0.98);
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+.perf-chip[data-perf-metric="fps"] {
+  transition: background-color 320ms ease, border-color 320ms ease, color 320ms ease;
+}
+
+.perf-chip--fps {
+  box-sizing: border-box;
+  height: 28px;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 8px;
+}
+
+.perf-chip--fps .perf-chip__value {
+  font-size: 11px;
+  line-height: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.perf-chip--fps .perf-chip__unit {
+  color: #9ca3af;
+  font-size: 7px;
+  line-height: 8px;
+}
+
+:root[data-theme="light"] .perf-chip--fps .perf-chip__unit {
+  color: #6b7280;
+}
+
+/* Scheduler activity is separate from renderer capability (WebGPU/WebGL). */
+.hud-chip--gpu.is-rendering {
+  --hud-activity-fill: rgba(5, 46, 22, 0.9);
+  color: rgba(187, 247, 208, 0.98);
+}
+
+
+
+/* Existing supplied scene-credit and map-rate readout presentation. */
+/*
+ * While a panorama is entered its credit takes the bar's right end, where the
+ * basemap's is. Its tab and Escape are the ways out.
+ */
+.scene-hud {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  min-width: 0;
+}
+
+.scene-credits-slot {
+  display: inline-flex;
+  gap: 3px;
+  min-width: 0;
+}
+
+.scene-credit-chip {
+  gap: 5px;
+  text-decoration: none;
+  min-width: 0;
+}
+
+.scene-credit-chip__text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.scene-credit-chip .foss-earth-external-link-icon {
+  flex-shrink: 0;
+  color: rgba(147, 197, 253, 0.92);
+}
+
+
+.map-download-speed {
+  color: #9ca3af;
+  display: inline-block;
+  flex: 0 0 4ch;
+  width: 4ch;
+  margin-left: 2px;
+  font-family: "SF Mono", "Menlo", "Monaco", monospace;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: pre;
+  line-height: 1.05;
+}
+
+.map-download-value {
+  display: block;
+  font-size: 0.75em;
+}
+
+.map-download-unit {
+  display: block;
+  font-size: 0.5em;
+}
+
+.scene-hud[hidden] {
+  display: none;
+}

@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "ui": {
+    "package": "@foss-earth/ui",
+    "version": "0.1.0",
+    "artifactSha256": null,
+    "revision": null,
+    "status": "current explicit Document and refresh source requires a newly checked exact UI archive; final public pin pending",
+    "priorLocalArtifactSha256": "3482714b95671eaf2abc23aa9be10974f38dbead09c868bf8d78559028eb9a7c",
+    "frozenFoundation": {
+      "revision": "ee3d085f98005cfd9dd7f62066d29f193c8662ed",
+      "artifactSha256": "71bc6508b41a9f7bab8a73cf465474958fb0209a2a431f92277d55ac6c4825f7",
+      "status": "prior-only local evidence; does not qualify the current explicit-refresh contract"
+    }
+  }
+}

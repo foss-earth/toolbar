@@ -1,0 +1,42 @@
+{
+  "format": "foss-earth.toolbar.activity-extraction",
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/foss-earth/foss-earth.github.io",
+    "revision": "90e23b3ee96f53ec5900afc5991a21fffa58649d",
+    "tree": "c68d1fabd9fce19e255ea89c65502666d0f74a27"
+  },
+  "entry": "@foss-earth/toolbar/browser",
+  "contracts": {
+    "RenderActivitySource": {
+      "isRendering": "() => boolean",
+      "onActiveRenderChange": "(listener: (active: boolean) => void) => () => void"
+    },
+    "TileStreamingSource": {
+      "isStreamingTiles": "() => boolean",
+      "onTilesStreamingChange": "(listener: (streaming: boolean) => void) => () => void"
+    },
+    "attachRendererActivity": "(element: HTMLElement, source: RenderActivitySource) => () => void",
+    "attachTileStreamingActivity": "(element: HTMLElement, source: TileStreamingSource) => () => void"
+  },
+  "ownership": {
+    "toolbar": "Supplied element activity classes/title/data attributes and guarded subscription disposal.",
+    "renderer": "Existing scheduler activity state; host adapts isActive/onActiveChange.",
+    "engine": "Existing tile-streaming state through supplied globe runtime.",
+    "host": "Element/Document, composition and lifecycle; no second renderer/settings registry/frame/clock."
+  },
+  "preparedTests": {
+    "originalRendererCases": 1,
+    "originalVisibilityCases": 4,
+    "newActivityLifecycleCases": 8,
+    "status": "UNRUN"
+  },
+  "preservedStyleBlock": "Immutable src/styles/hud.css Render-on-demand activity indicators through GPU tint, including reduced-motion and FPS formatting.",
+  "installedConsumer": "Public-only isolated fixture now exercises existing active streaming, independent render transitions, stale notifications, idempotent disposal and title restoration. Source preparation only.",
+  "limits": [
+    "Source must roll back a subscription that throws before returning its disposer.",
+    "Concurrent bindings must not own the same activity class/title on one element.",
+    "CSS compositor animation retained; no JavaScript polling/render loop added.",
+    "Actual current UI Document/refresh archive and owner checks are pending."
+  ]
+}

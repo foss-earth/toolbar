@@ -1,0 +1,57 @@
+{
+  "format": "foss-earth.toolbar.presentation-extraction",
+  "version": 1,
+  "source": {
+    "repository": "https://github.com/foss-earth/foss-earth.github.io",
+    "revision": "90e23b3ee96f53ec5900afc5991a21fffa58649d",
+    "tree": "c68d1fabd9fce19e255ea89c65502666d0f74a27"
+  },
+  "entry": "@foss-earth/toolbar/browser",
+  "contracts": {
+    "MapDownloadSource": {
+      "getMapDownloadBytesPerSecond": "() => number",
+      "onMapDownloadRateChange": "(listener: (bytesPerSecond: number) => void) => () => void"
+    },
+    "attachMapDownloadSpeed": "(button: HTMLElement, source: MapDownloadSource) => () => void",
+    "setMapSourceLabel": "(button: HTMLElement, text: string) => void",
+    "createHelpModal": "(modal: HTMLElement) => HelpModalHandle",
+    "HelpModalHandle": [
+      "show(): void",
+      "hide(): void",
+      "destroy(): void"
+    ],
+    "createSceneHud": "({ controller: SceneHudSource, container: HTMLElement, createExternalLinkIcon(document: Document): SVGSVGElement, mapSource?: HTMLElement | null, mapOnly?: readonly HTMLElement[] }) => SceneHudHandle",
+    "SceneHudSource": "subscribe(listener: (state: { status: { phase: string, credits: readonly SceneHudCredit[] } | null }) => void): () => void",
+    "SceneHudCredit": "{ text: string, license?: string | null, url?: string | null }"
+  },
+  "ownership": {
+    "toolbar": "Readout/help/credits DOM presentation and supplied subscription teardown.",
+    "host": "Actions, modal content, provider rates and scene controller data, one resource/render authority.",
+    "scenes": "Envelope, assets, placements, navigation, status/credits production.",
+    "ui": "Supplied public external-link SVG factory."
+  },
+  "originalCases": {
+    "mapDownload": 1,
+    "sceneCreditsHud": 2,
+    "assertionBodies": "retained unchanged"
+  },
+  "newCases": {
+    "presentationHostPorts": 2,
+    "installedRuntime": "Public map rate, help visibility and supplied scene-credit state with actual installed UI icon factory in own Document.",
+    "publicTypes": "Pure/browser public declarations under strict skipLibCheck=false."
+  },
+  "checksExecuted": [],
+  "status": "source-prepared-unrun",
+  "pending": [
+    "Primary integrate cleaned ancestry for five additional immutable source paths, preserving current lineage receipt.",
+    "Platform next checked sentence-case common CI pin and actual conformance.",
+    "Primary granted owner checks and isolated actual installed archive.",
+    "Exact final source/artifact/export pins and full intended-ref audit.",
+    "Actual Earth/Campus/Flight adoption and coordinator remote admission."
+  ],
+  "behavioralLimits": [
+    "Existing map-rate and scene-HUD detach APIs preserve original teardown semantics; hosts call each acquired disposer once.",
+    "Host subscription is responsible for rollback if subscribe throws before returning its disposer.",
+    "No source subscription is polled and no renderer/frame/timer authority is added."
+  ]
+}

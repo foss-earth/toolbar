@@ -1,0 +1,132 @@
+/**
+ * Page fullscreen, the browser differences around it, and the two per-device
+ * choices a host can offer: enter on every visit, and stop asking.
+ *
+ * The preference keys keep the `osfs.` prefix they were written under before
+ * this module moved out of the flight simulator, so a device that already made
+ * either choice keeps it. `moir-park.map-input-mode` is retained for the same
+ * reason.
+ */
+export const EVERY_VISIT_PREFERENCE_KEY = "osfs.fullscreen-every-visit";
+/** A declined offer, remembered per device the way the every-visit choice is. */
+export const PROMPT_DISMISSED_PREFERENCE_KEY = "osfs.fullscreen-prompt-dismissed";
+
+type FullscreenDocument = Document & {
+  webkitFullscreenEnabled?: boolean;
+  webkitFullscreenElement?: Element | null;
+  webkitExitFullscreen?(): Promise<void> | void;
+};
+type FullscreenRoot = HTMLElement & { webkitRequestFullscreen?(): Promise<void> | void };
+
+/** iPhone Safari has no page fullscreen; older iPad Safari only the prefixed API. */
+export function canRequestFullscreen(): boolean {
+  const doc = document as FullscreenDocument;
+  return Boolean(doc.fullscreenEnabled ?? doc.webkitFullscreenEnabled);
+}
+
+export function isFullscreen(): boolean {
+  const doc = document as FullscreenDocument;
+  return Boolean(doc.fullscreenElement ?? doc.webkitFullscreenElement);
+}
+
+/** Already running without browser bars, e.g. launched from the Home Screen. */
+export function isStandaloneDisplay(): boolean {
+  if ((navigator as Navigator & { standalone?: boolean }).standalone) return true;
+  return typeof window.matchMedia === "function"
+    && window.matchMedia("(display-mode: fullscreen), (display-mode: standalone)").matches;
+}
+
+/** Browsers grant this only during a tap, click or key press. */
+export async function enterFullscreen(): Promise<void> {
+  const root = document.documentElement as FullscreenRoot;
+  if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: "hide" });
+  else await root.webkitRequestFullscreen?.();
+}
+
+export async function exitFullscreen(): Promise<void> {
+  const doc = document as FullscreenDocument;
+  if (doc.exitFullscreen) await doc.exitFullscreen();
+  else await doc.webkitExitFullscreen?.();
+}
+
+export function toggleFullscreen(): Promise<void> {
+  return isFullscreen() ? exitFullscreen() : enterFullscreen();
+}
+
+export function onFullscreenChange(listener: () => void): () => void {
+  document.addEventListener("fullscreenchange", listener);
+  document.addEventListener("webkitfullscreenchange", listener);
+  return () => {
+    document.removeEventListener("fullscreenchange", listener);
+    document.removeEventListener("webkitfullscreenchange", listener);
+  };
+}
+
+/** Bind a HUD button to page fullscreen; browsers without it hide the button. */
+export interface FullscreenLauncherPort {
+  canRequest(): boolean;
+  isFullscreen(): boolean;
+  toggle(): Promise<void>;
+  subscribe(listener: () => void): () => void;
+}
+/** Only function references are stored; browser state is read when the host binds. */
+export const browserFullscreenPort: FullscreenLauncherPort = {
+  canRequest: canRequestFullscreen, isFullscreen, toggle: toggleFullscreen, subscribe: onFullscreenChange,
+};
+export function attachFullscreenButton(button: HTMLButtonElement, port: FullscreenLauncherPort = browserFullscreenPort): () => void {
+  const sync = (): void => {
+    const on = port.isFullscreen();
+    button.hidden = !port.canRequest();
+    button.title = on ? "Leave fullscreen" : "Enter fullscreen";
+    button.setAttribute("aria-label", button.title);
+    button.setAttribute("aria-pressed", String(on));
+  };
+  const onClick = (): void => {
+    // Keep the request in this user gesture. A refused request leaves the
+    // browser's fullscreen state, and therefore the button, unchanged.
+    void port.toggle().catch(() => {});
+  };
+  sync();
+  const detachChange = port.subscribe(sync);
+  button.addEventListener("click", onClick);
+  return () => {
+    button.removeEventListener("click", onClick);
+    detachChange();
+  };
+}
+
+export interface FullscreenPreferenceStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+function browserPreferenceStorage(): FullscreenPreferenceStorage | null {
+  try { return window.localStorage; } catch { return null; }
+}
+
+export function readFullscreenEveryVisit(storage: FullscreenPreferenceStorage | null = browserPreferenceStorage()): boolean {
+  try { return storage?.getItem(EVERY_VISIT_PREFERENCE_KEY) === "1"; } catch { return false; }
+}
+
+export function writeFullscreenEveryVisit(enabled: boolean, storage: FullscreenPreferenceStorage | null = browserPreferenceStorage()): void {
+  try {
+    if (enabled) storage?.setItem(EVERY_VISIT_PREFERENCE_KEY, "1");
+    else storage?.removeItem(EVERY_VISIT_PREFERENCE_KEY);
+  } catch { /* Private browsing: the choice lasts for this visit only. */ }
+}
+
+export function readFullscreenPromptDismissed(storage: FullscreenPreferenceStorage | null = browserPreferenceStorage()): boolean {
+  try { return storage?.getItem(PROMPT_DISMISSED_PREFERENCE_KEY) === "1"; } catch { return false; }
+}
+
+export function writeFullscreenPromptDismissed(dismissed: boolean, storage: FullscreenPreferenceStorage | null = browserPreferenceStorage()): void {
+  try {
+    if (dismissed) storage?.setItem(PROMPT_DISMISSED_PREFERENCE_KEY, "1");
+    else storage?.removeItem(PROMPT_DISMISSED_PREFERENCE_KEY);
+  } catch { /* Private browsing: the choice lasts for this visit only. */ }
+}
+
+/** Coarse pointer and no page fullscreen: an iPhone, where the Home Screen is the only way. */
+export function prefersHomeScreenInstall(): boolean {
+  return typeof window.matchMedia === "function" && window.matchMedia("(pointer: coarse)").matches;
+}

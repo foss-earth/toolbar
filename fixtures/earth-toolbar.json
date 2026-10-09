@@ -1,0 +1,188 @@
+[
+  {
+    "id": "north",
+    "label": "North",
+    "defaultPriority": 0,
+    "description": "Shows North.",
+    "defaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings.",
+    "source": "src/app/createGlobeApp.ts",
+    "essential": true,
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "help",
+    "label": "Help (?)",
+    "defaultPriority": 1,
+    "description": "Shows the ? button that opens the controls help.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.help",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "inputMode",
+    "label": "Input method",
+    "defaultPriority": 2,
+    "description": "Shows the input method button, which opens the Controls tab.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.inputMode",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "fullscreen",
+    "label": "Fullscreen",
+    "defaultPriority": 3,
+    "description": "Shows the button that enters or leaves fullscreen.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.fullscreen",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "fps",
+    "label": "FPS",
+    "defaultPriority": 4,
+    "description": "Frames per second rendered by the map.",
+    "defaultReason": "Shown when it fits after north, help, input method and fullscreen: it is the first performance reading to look at.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.fps",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "renderer",
+    "label": "Renderer",
+    "defaultPriority": 5,
+    "description": "Shows the WebGPU or WebGL indicator that opens the Renderer tab.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.renderer",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "position",
+    "label": "Camera position",
+    "defaultPriority": 6,
+    "description": "Shows the latitude, longitude, altitude, heading, pitch and zoom readout that opens Location.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.position",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "theme",
+    "label": "Theme button",
+    "defaultPriority": 7,
+    "description": "Shows the light and dark theme button.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.theme",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "settings",
+    "label": "Settings (\u2699)",
+    "defaultPriority": 8,
+    "description": "Shows the \u2699 button that opens the Settings tab.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.settings",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "bugReport",
+    "label": "Bug report (\ud83d\udc1e)",
+    "defaultPriority": 9,
+    "description": "Shows the \ud83d\udc1e button that shows or closes the Bug report tab.",
+    "defaultReason": "Shown when it fits after the higher-priority controls and before the detail slider and attribution.",
+    "source": "src/hud/hudButtonVisibility.ts",
+    "visibilityId": "interface.toolbar.bugReport",
+    "defaultVisibility": "auto",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "frame",
+    "label": "Frame time",
+    "defaultPriority": 10,
+    "description": "Average time spent rendering each frame.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.frame",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "p95",
+    "label": "P95 frame time",
+    "defaultPriority": 11,
+    "description": "95th percentile frame time over the recent sample window.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.p95",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "activeMeshes",
+    "label": "Active meshes (#\u2b1f)",
+    "defaultPriority": 12,
+    "description": "Babylon meshes currently active in the scene.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.activeMeshes",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "drawCalls",
+    "label": "Draw calls",
+    "defaultPriority": 13,
+    "description": "GPU draw calls submitted for the current frame when the renderer exposes them.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.drawCalls",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "tiles",
+    "label": "Map tiles (#/#t)",
+    "defaultPriority": 14,
+    "description": "Visible map tiles over active map tiles managed by the tile runtime.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.tiles",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "culling",
+    "label": "Culling",
+    "defaultPriority": 15,
+    "description": "Visible tracked objects over total tracked objects after hemisphere culling.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.culling",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  },
+  {
+    "id": "memory",
+    "label": "Memory",
+    "defaultPriority": 16,
+    "description": "Approximate JavaScript heap memory currently used by the page.",
+    "defaultReason": "Hidden by default: a debugging reading.",
+    "source": "src/app/createGlobeApp.ts",
+    "visibilityId": "interface.performanceHud.memory",
+    "defaultVisibility": "off",
+    "priorityDefaultReason": "North and help come first, followed by input method, fullscreen, FPS, renderer, position, theme, settings, bug report and additional performance readings."
+  }
+]
