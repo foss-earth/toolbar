@@ -1,16 +1,16 @@
 {
   "schemaVersion": 1,
   "owner": "foss-earth/toolbar",
-  "preparedAtUtc": "2026-10-09T20-27-40Z",
+  "preparedAtUtc": "2026-10-09T20-29-14Z",
   "status": "SOURCE-ONLY current bytes; checks/history/installed consumers/artifacts/adoption/admission UNRUN",
   "sourceRevision": "90e23b3ee96f53ec5900afc5991a21fffa58649d",
-  "priorSourceReceipt": "build/source-only/2026-10-09T20-27-40Z/SOURCE_RECEIPT.json.before",
-  "sourceManifestPath": "build/source-only/2026-10-09T20-27-40Z/source-manifest.json",
+  "priorSourceReceipt": "build/source-only/2026-10-09T20-29-14Z/SOURCE_RECEIPT.json.before",
+  "sourceManifestPath": "build/source-only/2026-10-09T20-29-14Z/source-manifest.json",
   "sourceManifestEncoding": "UTF-8 sorted path JSON array, indent2, trailing LF; ignored outputs and receipt excluded",
-  "sourceManifestSha256": "ac9ce423f44129a423a9481c8c70a46cc806a1731f108a105a3bf0c4e4e7e0b5",
+  "sourceManifestSha256": "c52d7f1c01d2179853b13ae7090bce70f611192db33807b81d15c13101ce5774",
   "sourceFileCount": 64,
   "provenancePath": "provenance.json",
-  "provenanceSha256": "0150d3c3a082ccdb4fe72bad4c0a926a87a0cbbbe11a08bf3d804a1bc056d149",
+  "provenanceSha256": "7655a734b60e9dd3f01077493f33cb193b56748ad6dbd244266945121f75c63f",
   "publicExports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -145,7 +145,7 @@
     },
     {
       "path": "provenance.json",
-      "sha256": "0150d3c3a082ccdb4fe72bad4c0a926a87a0cbbbe11a08bf3d804a1bc056d149",
+      "sha256": "7655a734b60e9dd3f01077493f33cb193b56748ad6dbd244266945121f75c63f",
       "bytes": 31014
     },
     {
@@ -265,8 +265,8 @@
     },
     {
       "path": "src/hudButtonVisibility.test.ts",
-      "sha256": "552f804c0abbc0c4779e86f1feb8729b4978edfefbead23870480947d65ed14c",
-      "bytes": 3098
+      "sha256": "1d72bd63b9784e2e819d1e867e297941273633c184e1e428f8f74b98f8fb6f76",
+      "bytes": 3145
     },
     {
       "path": "src/hudButtonVisibility.ts",

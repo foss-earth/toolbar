@@ -266,7 +266,7 @@
         "All four original test names and assertions retained using real public UI registry, Earth host descriptor fixture and explicit legacy migration instead of application singleton.",
         "Storage stubs and unreadable/malformed storage assertions retained; public load/save receive supplied registry, imports use emitted ESM .js paths."
       ],
-      "destinationSha256": "552f804c0abbc0c4779e86f1feb8729b4978edfefbead23870480947d65ed14c"
+      "destinationSha256": "1d72bd63b9784e2e819d1e867e297941273633c184e1e428f8f74b98f8fb6f76"
     },
     {
       "source": "src/shell/mapDownloadHud.ts",
@@ -378,7 +378,7 @@
     ]
   },
   "primarySourceSnapshot": {
-    "createdAtUtc": "2026-10-09T20-27-40Z",
+    "createdAtUtc": "2026-10-09T20-29-14Z",
     "status": "source-only; no qualification or artifact seal",
     "authoredFiles": [
       {

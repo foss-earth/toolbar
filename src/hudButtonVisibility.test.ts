@@ -1,13 +1,14 @@
 // @vitest-environment jsdom
 
 import { readFileSync } from "node:fs";
+import { URL as NodeURL } from "node:url";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
 import { createToolbarParameters, type ToolbarItemDescriptor } from "./settings.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { HUD_BUTTON_VISIBILITY_MIGRATION, HUD_BUTTON_VISIBILITY_STORAGE_KEY, loadHudButtonVisibility, saveHudButtonVisibility } from "./hudButtonVisibility.js";
 
 // The current host registers its catalogue and opts into legacy migration explicitly.
-const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new URL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
+const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new NodeURL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
 function createHostSettings() {
   const settings = createSettingsRegistry({ storage: localStorage });
   settings.register(createToolbarParameters(items));
