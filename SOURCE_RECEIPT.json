@@ -376,11 +376,11 @@
     "coordinator public transport and remote admission"
   ],
   "policySentence": "You cannot have AI as a co-author, or your contributions will be rejected.",
-  "verifiedAtUtc": "2026-10-09T23:44:08.921257+00:00",
+  "verifiedAtUtc": "2026-10-10T00:09:09.528505+00:00",
   "currentSourceManifest": {
-    "path": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-sealed-source-files.json",
-    "sha256": "797951c28114e198c7e2a7346ca48729b739e3dcedd57ef0f495c2b2d13d2708",
-    "fileCount": 64
+    "path": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-r4-sealed-source-files.json",
+    "sha256": "5b73e74a14714ceee1c36b0f7dcf4cfe3c01ed469f966d11127b3f37e7460361",
+    "fileCount": 65
   },
   "currentSharedCi": {
     "revision": "1db73d1ddb342e348a2c9e8387f7bbc7ebb3225e",
@@ -400,6 +400,11 @@
     {
       "receipt": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-current-conformance.json",
       "sha256": "6aa095c3433f3c184c9a29afc5a21737e135bbf77d1f7a178d5f99eb30f4bf54",
+      "exitCode": 0
+    },
+    {
+      "receipt": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-r4-track-canonical.json",
+      "sha256": "d23884e652d3f5ba9708f75ed1d475c19a3babe4ce9aad8b6190995062f794e0",
       "exitCode": 0
     }
   ]
