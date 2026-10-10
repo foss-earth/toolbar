@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "owner": "foss-earth/toolbar",
   "preparedAtUtc": "2026-10-09T20-29-14Z",
-  "status": "Current source seal; individual retained check receipts define qualification. Installed archive and application/remote adoption separately recorded in external release descriptor.",
+  "status": "Current portable source seal; external exact delivery describes implementation/browser/ref qualification and outstanding remote gates.",
   "sourceRevision": "90e23b3ee96f53ec5900afc5991a21fffa58649d",
   "priorSourceReceipt": "build/source-only/2026-10-09T20-29-14Z/SOURCE_RECEIPT.json.before",
   "sourceManifestPath": "build/source-only/2026-10-09T20-29-14Z/source-manifest.json",
@@ -376,11 +376,12 @@
     "coordinator public transport and remote admission"
   ],
   "policySentence": "You cannot have AI as a co-author, or your contributions will be rejected.",
-  "verifiedAtUtc": "2026-10-10T00:09:09.528505+00:00",
+  "verifiedAtUtc": "2026-10-10T03:26:23.466930+00:00",
   "currentSourceManifest": {
-    "path": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-r4-sealed-source-files.json",
-    "sha256": "5b73e74a14714ceee1c36b0f7dcf4cfe3c01ed469f966d11127b3f37e7460361",
-    "fileCount": 65
+    "evidenceId": "toolbar-current-source-files.json",
+    "sha256": "181d1c0373e6320892aef8c98f0d6298f3bedc896e964f574d302c7b2b8caee1",
+    "fileCount": 65,
+    "scope": "Private retained documentary evidence, not an artifact path or public URL"
   },
   "currentSharedCi": {
     "revision": "1db73d1ddb342e348a2c9e8387f7bbc7ebb3225e",
@@ -388,24 +389,29 @@
     "artifactSha256": "bd884d925b8a7339b15fa61a477cf652bb73d41cc68addf50a050ab6cb151611",
     "descriptorSha256": "d60ee5067185a768f0890da2ed87d82dbfa08f28282e4d05a35e823c70307122",
     "callerSha256": "b9fdfbf4bd61ed727abaef4fd9990b92714a6d2c1388feec600dc16337436b2c",
-    "fullIntendedRefs": "external release descriptor; mandatory complete nonempty audit after this commit",
+    "fullIntendedRefs": "complete external delivery audit after this commit",
     "remoteAdmissionVerifiedByOwner": false
   },
   "currentChecks": [
     {
-      "receipt": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-ci-install.json",
+      "evidenceId": "toolbar-ci-install.json",
       "sha256": "bfeaff458b333d9e85398f88848cf078e72a81b6abed662d14dd3c2c8bc57426",
       "exitCode": 0
     },
     {
-      "receipt": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-current-conformance.json",
+      "evidenceId": "toolbar-current-conformance.json",
       "sha256": "6aa095c3433f3c184c9a29afc5a21737e135bbf77d1f7a178d5f99eb30f4bf54",
       "exitCode": 0
     },
     {
-      "receipt": "/Users/felg/gh/foss-earth/foss-earth.github.io/build/repository-split/checks/2026-10-09-granted-verification/toolbar-r4-track-canonical.json",
+      "evidenceId": "toolbar-r4-track-canonical.json",
       "sha256": "d23884e652d3f5ba9708f75ed1d475c19a3babe4ce9aad8b6190995062f794e0",
       "exitCode": 0
     }
-  ]
+  ],
+  "publicationEvidence": {
+    "scope": "Portable public provenance for prior retained local qualification. Execution/source manifests remain private retained evidence identified by documentary evidence IDs and their unchanged SHA256 seals. Evidence IDs are not package-relative files or public download URLs.",
+    "originalReceiptSha256": "a30a7e8682712b8e5c0ec3547a4325449fdd6aa94c84f24478e336d38292bf0d",
+    "currentPreparation": "Metadata-only portable publication candidate; new source/artifact/ref qualification remains pending. Existing individual check receipts and exact archive descriptors retain qualification only for their original bytes and scope."
+  }
 }
