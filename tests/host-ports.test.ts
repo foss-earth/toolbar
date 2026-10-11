@@ -83,7 +83,7 @@ describe("toolbar explicit host ports", () => {
     value = { baseMeters: null, note: "The sea level grid could not load: HTTP 404" }; notify(); expect(chip.querySelector<HTMLElement>("[data-position-part='altitude']")?.title).toBe(value.note);
     handle.destroy(); handle.destroy(); notify(); handle.update(reading); expect(chip.childNodes).toHaveLength(0); expect(stop).toHaveBeenCalledOnce();
   });
-  it("never asks sea-level data for geoid heights or AGL and keeps missing data explicit", () => {
+  it("never asks sea-level data for geoid ASL or same-datum AGL and keeps missing data explicit", () => {
     const settings = registry(); const chip = document.createElement("button"); const read = vi.fn(() => ({ baseMeters: -27.3 }));
     const handle = createPositionReadout(chip, settings, { seaLevel: { read } });
     handle.update({ ...reading, heightDatum: "geoid" }); expect(chip.textContent).toContain("1000m ASL");

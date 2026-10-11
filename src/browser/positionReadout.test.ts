@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { POSITION_PARAMETERS } from "../settings.js";
 import { createSettingsRegistry, type SettingsRegistry } from "@foss-earth/ui/settings";
 import { createPositionReadout, type PositionReadoutHandle } from "./positionReadout.js";
@@ -89,6 +89,64 @@ describe("position readout", () => {
     expect(part("altitude")!.textContent).toBe("1000ft ASL");
   });
 
+  it("keeps an explicitly unknown height unknown across reference and unit changes", () => {
+    const readSeaLevel = vi.fn(() => ({ baseMeters: -27 }));
+    readout.destroy();
+    readout = createPositionReadout(chip, settings, { seaLevel: { read: readSeaLevel } });
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: null, groundHeightMeters: 250, heightDatum: "ellipsoid" });
+
+    expect(part("altitude")!.textContent).toBe("—m ASL");
+    expect(part("altitude")!.title).toBe("Height is unknown.");
+
+    settings.set("interface.position.altitude", "agl");
+    expect(part("altitude")!.textContent).toBe("—m AGL");
+    settings.set("interface.position.altitudeUnit", "ft");
+    expect(part("altitude")!.textContent).toBe("—ft AGL");
+    settings.set("interface.position.altitude", "asl");
+    expect(part("altitude")!.textContent).toBe("—ft ASL");
+    expect(part("altitude")!.title).toBe("Height is unknown.");
+    expect(readSeaLevel).not.toHaveBeenCalled();
+
+    settings.set("interface.position.altitudeUnit", "m");
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: 100, heightDatum: "ellipsoid" });
+    expect(part("altitude")!.textContent).toBe("127m ASL");
+    expect(part("altitude")!.title).toBe("");
+    expect(readSeaLevel).toHaveBeenCalledOnce();
+
+    readout.update(MINNEAPOLIS);
+    expect(part("altitude")).toBeNull();
+  });
+
+  it("converts differing altitude and ground datums for AGL once sea-level data is ready", () => {
+    let notify = () => {};
+    let offset: number | null = null;
+    const readSeaLevel = vi.fn(() => ({ baseMeters: offset, note: "Loading the sea level grid." }));
+    readout.destroy();
+    readout = createPositionReadout(chip, settings, {
+      seaLevel: { read: readSeaLevel, subscribe: listener => { notify = listener; return () => {}; } },
+    });
+    settings.set("interface.position.altitude", "agl");
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: 275, heightDatum: "ellipsoid", groundHeightMeters: 250, groundHeightDatum: "geoid" });
+
+    expect(part("altitude")!.textContent).toBe("—m AGL");
+    expect(part("altitude")!.title).toBe("Loading the sea level grid.");
+    offset = -25;
+    notify();
+    expect(part("altitude")!.textContent).toBe("50m AGL");
+    expect(part("altitude")!.title).toBe("");
+
+    // The same camera and ground expressed in the opposite datums retain the distance.
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: 300, heightDatum: "geoid", groundHeightMeters: 225, groundHeightDatum: "ellipsoid" });
+    expect(part("altitude")!.textContent).toBe("50m AGL");
+    expect(readSeaLevel).toHaveBeenLastCalledWith(expect.objectContaining({ heightDatum: "ellipsoid" }), null);
+
+    const reads = readSeaLevel.mock.calls.length;
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: null, heightDatum: "ellipsoid", groundHeightMeters: 250, groundHeightDatum: "geoid" });
+    expect(part("altitude")!.textContent).toBe("—m AGL");
+    expect(part("altitude")!.title).toBe("Height is unknown.");
+    expect(readSeaLevel).toHaveBeenCalledTimes(reads);
+  });
+
   it("keeps its elements while only the numbers change", () => {
     settings.set("interface.position.coordinateLabels", "icons");
     readout.update({ ...MINNEAPOLIS, altitudeMeters: 100 });
@@ -128,5 +186,10 @@ describe("altitude text", () => {
   it("measures from sea level's height where it is not zero, and shows a dash while that is unknown", () => {
     expect(formatAltitude(100, -27.3, "asl", "m")).toBe("127m ASL");
     expect(formatAltitude(100, null, "asl", "ft")).toBe("—ft ASL");
+  });
+
+  it("shows a dash when the altitude itself is unknown", () => {
+    expect(formatAltitude(null, 0, "asl", "m")).toBe("—m ASL");
+    expect(formatAltitude(null, 250, "agl", "ft")).toBe("—ft AGL");
   });
 });

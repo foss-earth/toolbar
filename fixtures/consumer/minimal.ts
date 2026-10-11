@@ -1,4 +1,4 @@
-import { createToolbarParameters, formatAltitude, type ToolbarItemDescriptor, type PositionReading, type RenderActivitySource, type TileStreamingSource, type MapDownloadSource, type SceneHudSource, type SceneHudCredit, type HelpModalHandle, type SceneHudHandle } from "@foss-earth/toolbar";
+import { createToolbarParameters, formatAltitude, type ToolbarItemDescriptor, type PositionReading, type ToolbarViewReading, type CameraAltitude, type RenderActivitySource, type TileStreamingSource, type MapDownloadSource, type SceneHudSource, type SceneHudCredit, type HelpModalHandle, type SceneHudHandle } from "@foss-earth/toolbar";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
 import { createPositionReadout, createLatitudeIcon, createLongitudeIcon, createHudBar, renderPerformanceChips, fitHudBar, browserHudBarLayoutPorts, bindToolbarLauncher, createToolbarInterfaceSection, attachRendererActivity, attachTileStreamingActivity, attachMapDownloadSpeed, setMapSourceLabel, createHelpModal, createSceneHud } from "@foss-earth/toolbar/browser";
 import type { HudBarLayoutPorts } from "@foss-earth/toolbar";
@@ -6,8 +6,12 @@ import { createParameterSection, createExternalLinkIcon } from "@foss-earth/ui/b
 const items: ToolbarItemDescriptor[] = [{ id: "host", label: "Host", defaultPriority: 0, visibilityId: "interface.toolbar.host", description: "Shows the host launcher.", defaultReason: "Host default.", source: "host/toolbar.ts" }];
 const settings = createSettingsRegistry({ storage: null }); settings.register(createToolbarParameters(items));
 formatAltitude(1000, 0, "asl", "m");
-const reading: PositionReading = { latDeg: 45, lonDeg: -93, heightDatum: "ellipsoid" };
+formatAltitude(null, 0, "asl", "m");
+const reading: PositionReading = { latDeg: 45, lonDeg: -93, heightDatum: "ellipsoid", groundHeightDatum: "geoid" };
 void reading;
+const pictureView: ToolbarViewReading = { latDeg: 45, lonDeg: -93, headingDeg: 17, pitchDeg: 5, zoomMeters: 600, verticalFovDeg: 75 };
+const pictureAltitude: CameraAltitude = { altitudeMeters: null, groundHeightMeters: null, heightDatum: "ellipsoid", groundHeightDatum: "geoid" };
+void pictureView; void pictureAltitude;
 function mount(element: HTMLButtonElement) {
   const launcher = bindToolbarLauncher(element, { tabId: "host-tab", toggleTab: (id: "host-tab") => { void id; } });
   const readout = createPositionReadout(element, settings, { seaLevel: { read: () => ({ baseMeters: null, note: "Host data pending." }) } });

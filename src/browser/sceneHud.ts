@@ -21,8 +21,8 @@ export interface SceneHudHandle {
 /**
  * The HUD bar's right end while a panorama is entered: its credit where the
  * basemap's is. The map is not drawn then, so `mapSource` (the basemap's
- * group) is hidden, and so is whatever else is in `mapOnly`, such as the
- * camera's position, whose Location tab a panorama hides. There is no close
+ * group) is hidden, and so is whatever else is in `mapOnly`, such as other
+ * basemap controls. The host's picture/view readout can remain visible. There is no close
  * button: the panorama's tab and Escape are the ways out.
  */
 export function createSceneHud(options: {

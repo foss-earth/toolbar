@@ -22,9 +22,9 @@ export function formatDistance(meters: number): string {
  * there, or a dash while that is not known. Metres stay whole to 100 km, the
  * range a height is read to the metre in.
  */
-export function formatAltitude(altitudeMeters: number, baseMeters: number | null, reference: AltitudeReference, unit: AltitudeUnit): string {
+export function formatAltitude(altitudeMeters: number | null, baseMeters: number | null, reference: AltitudeReference, unit: AltitudeUnit): string {
   const suffix = reference === "asl" ? "ASL" : "AGL";
-  if (baseMeters === null) return `\u2014${unit} ${suffix}`;
+  if (altitudeMeters === null || baseMeters === null) return `\u2014${unit} ${suffix}`;
   const meters = altitudeMeters - baseMeters;
   const value = unit === "ft" ? `${Math.round(meters / METERS_PER_FOOT)}ft`
     : Math.abs(meters) < 100_000 ? `${Math.round(meters)}m` : formatDistance(meters);

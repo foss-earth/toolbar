@@ -9,16 +9,18 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 export interface PositionReading {
   latDeg: number;
   lonDeg: number;
-  /** The height, in metres, measured as the drawn world's heights are (`heightDatum`). Left out, the readout shows no altitude. */
-  altitudeMeters?: number;
-  /** The height of the ground directly below, measured the same way; null while no terrain there has loaded. */
+  /** The height, in metres, measured from `heightDatum`. Null shows an unknown height; left out, the readout shows no altitude. */
+  altitudeMeters?: number | null;
+  /** The height of the ground directly below, measured from `groundHeightDatum`; null while no terrain there has loaded. */
   groundHeightMeters?: number | null;
   /**
-   * What the drawn world's heights are measured from (`surfaceHeightDatum`).
+   * What the altitude is measured from.
    * Over the ellipsoid, the altitude above sea level takes the geoid's height
    * away. Sea level when left out.
    */
   heightDatum?: PositionHeightDatum;
+  /** What the ground's height is measured from; `heightDatum` when omitted. */
+  groundHeightDatum?: PositionHeightDatum;
   /** What follows the position, such as "h017° p71° z600m". */
   rest?: string;
 }
@@ -125,6 +127,16 @@ export function createPositionReadout(element: HTMLElement, settings: SettingsRe
     return value?.baseMeters ?? null;
   }
 
+  function groundHeight(reading: PositionReading): number | null {
+    const ground = reading.groundHeightMeters ?? null;
+    const altitudeDatum = reading.heightDatum ?? "geoid";
+    if (ground === null || (reading.groundHeightDatum ?? altitudeDatum) === altitudeDatum) return ground;
+    // Sea level's ellipsoid height converts between ellipsoid and geoid heights.
+    const offset = seaLevel({ ...reading, heightDatum: "ellipsoid" });
+    if (offset === null) return null;
+    return altitudeDatum === "ellipsoid" ? ground + offset : ground - offset;
+  }
+
   function draw(): void {
     if (destroyed || !last) return;
     const labels = settings.get<CoordinateLabels>(POSITION_COORDINATE_LABELS_ID);
@@ -139,10 +151,11 @@ export function createPositionReadout(element: HTMLElement, settings: SettingsRe
     const shown = [latitude, longitude];
     if (last.altitudeMeters !== undefined) {
       const reference = settings.get<AltitudeReference>(POSITION_ALTITUDE_ID);
-      const base = reference === "agl" ? last.groundHeightMeters ?? null : seaLevel(last);
+      const heightUnknown = last.altitudeMeters === null;
+      const base = heightUnknown ? null : reference === "agl" ? groundHeight(last) : seaLevel(last);
       setText(altitude, formatAltitude(last.altitudeMeters, base, reference, settings.get<AltitudeUnit>(POSITION_ALTITUDE_UNIT_ID)));
       // Why a dash, for whoever points at it.
-      const note = base !== null ? "" : reference === "agl" ? "No terrain below has loaded yet."
+      const note = heightUnknown ? "Height is unknown." : base !== null ? "" : reference === "agl" && last.groundHeightMeters == null ? "No terrain below has loaded yet."
         : seaLevelNote;
       if (altitude.element.title !== note) altitude.element.title = note;
       shown.push(altitude);
