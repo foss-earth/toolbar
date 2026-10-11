@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
-import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, type ToolbarItemDescriptor } from "../src/settings.js";
+import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
 import { HUD_BUTTON_VISIBILITY_MIGRATION, HUD_BUTTON_VISIBILITY_STORAGE_KEY, loadHudButtonVisibility, saveHudButtonVisibility } from "../src/hudButtonVisibility.js";
 import { PERFORMANCE_HUD_VISIBILITY_MIGRATION, PERFORMANCE_HUD_VISIBILITY_STORAGE_KEY } from "../src/performance.js";
 const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new URL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
@@ -13,6 +13,25 @@ function setup(legacy?: string) {
   return { settings, records };
 }
 describe("host toolbar catalog and retained choices", () => {
+  it("keeps map controls compact until explicitly expanded and retains that choice on reload", () => {
+    const records = new Map<string, string>();
+    const storage = { getItem: (key: string) => records.get(key) ?? null, setItem: (key: string, value: string) => { records.set(key, value); } };
+    const create = () => {
+      const registry = createSettingsRegistry({ storage });
+      registry.register(MAP_SOURCE_HUD_LAYOUT_PARAMETERS);
+      return registry;
+    };
+    const settings = create();
+    expect(settings.inspect(MAP_SOURCE_HUD_LAYOUT_ID)).toMatchObject({ value: "compact", provenance: "default" });
+    expect(settings.list()[0].home).toEqual({ tab: "interface", section: "toolbar", level: "main" });
+    expect(settings.set(MAP_SOURCE_HUD_LAYOUT_ID, "expanded")).toEqual({ ok: true });
+    expect(create().inspect(MAP_SOURCE_HUD_LAYOUT_ID)).toMatchObject({ value: "expanded", provenance: "user" });
+    expect(settings.set(MAP_SOURCE_HUD_LAYOUT_ID, "vertical").ok).toBe(false);
+    expect(settings.get(MAP_SOURCE_HUD_LAYOUT_ID)).toBe("expanded");
+    settings.reset(MAP_SOURCE_HUD_LAYOUT_ID);
+    expect(create().get(MAP_SOURCE_HUD_LAYOUT_ID)).toBe("compact");
+  });
+
   it("preserves the Earth seventeen priorities and on/auto/off defaults in Interface", () => {
     const { settings } = setup();
     expect(items.map(item => settings.get(toolbarPriorityParameterId(item.id)))).toEqual(Array.from({ length: 17 }, (_, index) => index));

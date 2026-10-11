@@ -2,6 +2,25 @@ import type { ParameterSpec } from "@foss-earth/ui/settings";
 import { POSITION_COORDINATE_LABELS_ID, POSITION_ALTITUDE_ID, POSITION_ALTITUDE_UNIT_ID } from "./position.js";
 export type ToolbarVisibility = "on" | "auto" | "off";
 export const INTERFACE_TAB = "interface";
+export const MAP_SOURCE_HUD_LAYOUT_ID = "interface.mapHud.layout";
+/** Presentation only; host composition passes the choice to its map HUD. */
+export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
+  id: MAP_SOURCE_HUD_LAYOUT_ID,
+  label: "Map controls",
+  description: "Compact places a small detail rail beside the basemap at the bottom right. Expanded places a wider rail above the basemap for frequent detail adjustments.",
+  unit: "none",
+  kind: "choice",
+  choices: [
+    { id: "compact", label: "Compact", description: "Small horizontal rail beside the basemap." },
+    { id: "expanded", label: "Expanded", description: "Wider rail above the basemap." },
+  ],
+  default: "compact",
+  defaultReason: "Keep the standard map controls compact; expand only when requested.",
+  home: { tab: INTERFACE_TAB, section: "toolbar", level: "main" },
+  appliesLive: true,
+  source: "src/settings.ts",
+}];
+
 export const TOOLBAR_EDIT_PRIORITIES_ID = "interface.toolbar.editPriorities";
 export function toolbarPriorityParameterId(item: string): string { return `interface.toolbar.priority.${item}`; }
 
