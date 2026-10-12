@@ -21,6 +21,21 @@ export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
   source: "src/settings.ts",
 }];
 
+export const TOOLBAR_BOTTOM_CLEARANCE_ID = "interface.toolbar.bottomClearance";
+/** Off until a phone shows that the home gesture lands on the toolbar. */
+export const TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS: readonly ParameterSpec[] = [{
+  id: TOOLBAR_BOTTOM_CLEARANCE_ID,
+  label: "Home indicator clearance",
+  description: "Lifts the bottom toolbar clear of a phone's home indicator, so a swipe that goes home does not press its buttons. Off sits the toolbar the same small distance from the bottom edge as from the sides. On adds that extra room, including the screen's own home-indicator inset, so it can be tried on a phone.",
+  unit: "none",
+  kind: "boolean",
+  default: false,
+  defaultReason: "The toolbar sits close to the bottom. The extra room stays off until a phone shows that the home gesture lands on the buttons.",
+  home: { tab: INTERFACE_TAB, section: "toolbar", level: "main" },
+  appliesLive: true,
+  source: "src/settings.ts",
+}];
+
 export const TOOLBAR_EDIT_PRIORITIES_ID = "interface.toolbar.editPriorities";
 export function toolbarPriorityParameterId(item: string): string { return `interface.toolbar.priority.${item}`; }
 

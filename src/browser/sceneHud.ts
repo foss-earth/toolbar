@@ -1,3 +1,7 @@
+const umnOnDark = new URL("../../assets/credits/umn-block-m-on-dark.svg", import.meta.url).href;
+const umnOnLight = new URL("../../assets/credits/umn-block-m-on-light.svg", import.meta.url).href;
+const UMN_REGENTS = /^\u00a9?\s*Regents of the University of Minnesota$/;
+
 /** Credits presentation only. Scene ownership, navigation and viewer state remain supplied by the host. */
 export interface SceneHudCredit {
   text: string;
@@ -16,6 +20,20 @@ export interface SceneHudSource {
 export interface SceneHudHandle {
   element: HTMLElement;
   destroy(): void;
+}
+
+/** The Block M stands in for the University's copyright line. The theme picks gold or maroon. */
+function umnMark(document: Document, text: string): HTMLElement {
+  const mark = document.createElement("span");
+  mark.className = "scene-credit-chip__mark";
+  for (const [className, src] of [["scene-credit-chip__mark-on-dark", umnOnDark], ["scene-credit-chip__mark-on-light", umnOnLight]] as const) {
+    const image = document.createElement("img");
+    image.className = className;
+    image.alt = text;
+    image.src = src;
+    mark.append(image);
+  }
+  return mark;
 }
 
 /**
@@ -64,11 +82,14 @@ export function createSceneHud(options: {
     shownCredits = key;
     credits.replaceChildren(...shown.map(credit => {
       const text = credit.license ? `${credit.text} \u00b7 ${credit.license}` : credit.text;
-      const label = el("span", "scene-credit-chip__text", text);
+      const regents = UMN_REGENTS.test(credit.text.trim());
+      const parts: Node[] = regents
+        ? [umnMark(document, credit.text), ...(credit.license ? [el("span", "scene-credit-chip__text", credit.license)] : [])]
+        : [el("span", "scene-credit-chip__text", text)];
       if (!credit.url) {
         const chip = el("span", "hud-chip scene-credit-chip");
         chip.title = text;
-        chip.append(label);
+        chip.append(...parts);
         return chip;
       }
       const link = el("a", "hud-chip hud-chip-button scene-credit-chip");
@@ -76,7 +97,7 @@ export function createSceneHud(options: {
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.title = `Panorama: ${text}. Opens its source.`;
-      link.append(label, createExternalLinkIcon(document));
+      link.append(...parts, createExternalLinkIcon(document));
       return link;
     }));
   });

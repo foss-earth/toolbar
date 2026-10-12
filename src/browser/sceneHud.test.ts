@@ -47,6 +47,24 @@ describe("the panorama's end of the HUD bar", () => {
     expect(position.hidden).toBe(false);
   });
 
+  it("shows the University of Minnesota's mark in place of the Regents copyright line", () => {
+    const { hud, show } = mount();
+    show("immersive", [{ text: "\u00a9 Regents of the University of Minnesota" }]);
+    const chip = hud.element.querySelector<HTMLElement>("#sceneCreditsSlot .scene-credit-chip")!;
+    const images = [...chip.querySelectorAll("img")];
+    expect(images.map(image => image.alt)).toEqual([
+      "\u00a9 Regents of the University of Minnesota",
+      "\u00a9 Regents of the University of Minnesota",
+    ]);
+    expect(images.map(image => image.getAttribute("src"))).toEqual([
+      expect.stringContaining("FFCC33"),
+      expect.stringContaining("7A0019"),
+    ]);
+    expect(chip.textContent).toBe("");
+    expect(chip.title).toBe("\u00a9 Regents of the University of Minnesota");
+    hud.destroy();
+  });
+
   it("leaves the map's group alone while a panorama is prepared or entered, when the map still shows", () => {
     const { mapSource, hud, show } = mount();
     show("entering", [CREDIT]);

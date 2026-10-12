@@ -15,16 +15,23 @@
    */
   --foss-inset-bottom: 0px;
 
-  /* Gap between the viewport edge and screen-anchored HUD clusters. */
-  --foss-hud-gap: 16px;
+  /* Same inset as an overlay window's corner: the bar sits this far from the bottom and the sides. */
+  --foss-hud-gap: 6px;
+  --foss-hud-side: 6px;
 
   /*
-   * Toolbar inset and notch safe area never stack — whichever is larger is the
-   * unusable strip — so max() rather than a sum.
+   * Browser chrome that covers the page (a mobile URL bar) always lifts the bar.
+   * The home-indicator inset is separate, and off until Home indicator clearance is on.
    */
+  --foss-hud-bottom: calc(var(--foss-hud-gap) + var(--foss-inset-bottom, 0px));
+  --foss-hud-left: calc(var(--foss-hud-side) + env(safe-area-inset-left, 0px));
+  --foss-hud-right: calc(var(--foss-hud-side) + env(safe-area-inset-right, 0px));
+}
+
+/* Opt-in room above a phone's home indicator, so a swipe home does not press the bar. */
+html[data-hud-home-clearance="true"] {
+  --foss-hud-gap: 16px;
   --foss-hud-bottom: calc(var(--foss-hud-gap) + max(var(--foss-inset-bottom, 0px), env(safe-area-inset-bottom, 0px)));
-  --foss-hud-left: calc(var(--foss-hud-gap) + env(safe-area-inset-left, 0px));
-  --foss-hud-right: calc(var(--foss-hud-gap) + env(safe-area-inset-right, 0px));
 }
 
 /*
@@ -221,7 +228,9 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
 }
 
 .hud-circle-button {
+  box-sizing: border-box;
   width: 30px;
+  height: 28px;
   padding: 0;
   font-family: system-ui, -apple-system, sans-serif;
   font-size: 15px;
@@ -231,6 +240,14 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
 
 .north-button {
   overflow: hidden;
+}
+
+.north-button svg {
+  display: block;
+  width: 26px;
+  height: 26px;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .settings-button {
@@ -404,6 +421,26 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
 .scene-credit-chip .foss-earth-external-link-icon {
   flex-shrink: 0;
   color: rgba(147, 197, 253, 0.92);
+}
+
+/* The University of Minnesota's Block M, in place of its copyright line. */
+.scene-credit-chip__mark {
+  display: inline-flex;
+  align-items: center;
+}
+
+.scene-credit-chip__mark img {
+  height: 16px;
+  width: auto;
+}
+
+.scene-credit-chip__mark-on-light,
+:root[data-theme="light"] .scene-credit-chip__mark-on-dark {
+  display: none;
+}
+
+:root[data-theme="light"] .scene-credit-chip__mark-on-light {
+  display: inline;
 }
 
 

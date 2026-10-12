@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
-import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
+import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, TOOLBAR_BOTTOM_CLEARANCE_ID, TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
 import { HUD_BUTTON_VISIBILITY_MIGRATION, HUD_BUTTON_VISIBILITY_STORAGE_KEY, loadHudButtonVisibility, saveHudButtonVisibility } from "../src/hudButtonVisibility.js";
 import { PERFORMANCE_HUD_VISIBILITY_MIGRATION, PERFORMANCE_HUD_VISIBILITY_STORAGE_KEY } from "../src/performance.js";
 const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new URL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
@@ -30,6 +30,23 @@ describe("host toolbar catalog and retained choices", () => {
     expect(settings.get(MAP_SOURCE_HUD_LAYOUT_ID)).toBe("expanded");
     settings.reset(MAP_SOURCE_HUD_LAYOUT_ID);
     expect(create().get(MAP_SOURCE_HUD_LAYOUT_ID)).toBe("compact");
+  });
+
+  it("leaves the home-indicator clearance off until it is chosen", () => {
+    const records = new Map<string, string>();
+    const storage = { getItem: (key: string) => records.get(key) ?? null, setItem: (key: string, value: string) => { records.set(key, value); } };
+    const create = () => {
+      const registry = createSettingsRegistry({ storage });
+      registry.register(TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS);
+      return registry;
+    };
+    const settings = create();
+    expect(settings.inspect(TOOLBAR_BOTTOM_CLEARANCE_ID)).toMatchObject({ value: false, provenance: "default" });
+    expect(settings.list()[0].home).toEqual({ tab: "interface", section: "toolbar", level: "main" });
+    expect(settings.set(TOOLBAR_BOTTOM_CLEARANCE_ID, true)).toEqual({ ok: true });
+    expect(create().get(TOOLBAR_BOTTOM_CLEARANCE_ID)).toBe(true);
+    settings.reset(TOOLBAR_BOTTOM_CLEARANCE_ID);
+    expect(create().get(TOOLBAR_BOTTOM_CLEARANCE_ID)).toBe(false);
   });
 
   it("preserves the Earth seventeen priorities and on/auto/off defaults in Interface", () => {

@@ -180,6 +180,27 @@ describe("one-row toolbar fitting", () => {
     expect(memory.style.order).toBe("");
   });
 
+  it("keeps the detail rail and provider in the row's right side instead of a line under the toolbar", () => {
+    const f = fixture(343, 500);
+    const detail = document.createElement("span");
+    detail.className = "map-detail-control";
+    const provider = document.createElement("span");
+    provider.className = "map-source-hud__provider";
+    f.end.append(detail, provider);
+    for (const item of f.items) if (item.priority <= 2) item.reserveSpace = true;
+    // Compact map controls: the rail and the provider share the end slot.
+    f.fitting.update(); f.flush();
+    // A full-width break puts that pair under the toolbar. They belong in the
+    // leftover width on the toolbar's own row, shortened together.
+    expect(f.bar.classList.contains("hud-bar--end-joined")).toBe(false);
+    expect(f.end.style.flexBasis).not.toBe("100%");
+    expect(f.end.style.maxWidth).toBe("224px");
+    expect(f.shown()).toEqual(["north", "help", "fps"]);
+    expect(detail.parentElement).toBe(f.end);
+    expect(provider.parentElement).toBe(f.end);
+    f.fitting.destroy();
+  });
+
   it("uses priority order and the supplied tie order even when DOM order differs", () => {
     const f = fixture(400);
     f.items.find(item => item.element === f.renderer)!.priority = 1.5;

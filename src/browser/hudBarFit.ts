@@ -106,50 +106,61 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
     const requiredSet = new Set(required);
     const reservationWidth = (entries: readonly HudBarFitItem[]): number =>
       entries.reduce((sum, item) => sum + widths.get(item)!, 0) + entries.length * gap;
-    let reserved = available.filter(item => item.reserveSpace || requiredSet.has(item));
-    let reservedWidth = reservationWidth(reserved);
-    // A newly high-ranked wide readout must not consume the credit's entire
-    // allocation. Fall back to the mandatory controls and fit the rest normally.
-    const reserveRequiredOnly = (): void => {
-      reserved = required;
-      reservedWidth = reservationWidth(reserved);
-    };
-    if (reservedWidth >= width) reserveRequiredOnly();
-    const measureEnd = (): number => {
-      end.style.maxWidth = `${Math.max(0, width - reservedWidth)}px`;
-      const measured = end.getBoundingClientRect().width;
-      // The detail rail and credit link cannot shrink as much as their text.
-      // Count overflowing content; scrollWidth rounds to an integer, so allow
-      // its rounding error before treating it as actual overflow.
-      return end.scrollWidth > measured + 1 ? end.scrollWidth : measured;
-    };
-    let endWidth = measureEnd();
-    if (endWidth + reservedWidth > width && reserved.some(item => !requiredSet.has(item))) {
-      reserveRequiredOnly();
-      endWidth = measureEnd();
-    }
-    // A manual extra may need another row. Keep the core row's controls when
-    // they fit beside the credit on their own, rather than spending their
-    // budget on the extra and hiding them just because it wraps.
-    const reservedFit = endWidth + reservedWidth <= width;
-    const reservedSet = new Set(reserved);
-    const fixed = available.filter(item => item.keepVisible || item.essential || (reservedSet.has(item) && reservedFit));
-    const alwaysVisible = new Set(fixed);
-    let used = endWidth + fixed.reduce((sum, item) => sum + widths.get(item)!, 0);
-    let count = fixed.length + (endWidth > 0 ? 1 : 0);
-    used += Math.max(0, count - 1) * gap;
-    let full = false;
-    for (const item of available) {
-      let visible = alwaysVisible.has(item);
-      if (!visible && !full) {
-        const next = used + widths.get(item)! + (count > 0 ? gap : 0);
-        visible = next <= width;
-        if (visible) { used = next; count++; }
-        else full = true;
+    /** Place the toolbar. `includeEnd` keeps the provider on that same row; otherwise the row is the toolbar's alone. */
+    const commit = (includeEnd: boolean): void => {
+      let reserved = available.filter(item => item.reserveSpace || requiredSet.has(item));
+      let reservedWidth = reservationWidth(reserved);
+      // A newly high-ranked wide readout must not consume the credit's entire
+      // allocation. Fall back to the mandatory controls and fit the rest normally.
+      const reserveRequiredOnly = (): void => {
+        reserved = required;
+        reservedWidth = reservationWidth(reserved);
+      };
+      let endWidth = 0;
+      if (includeEnd) {
+        if (reservedWidth >= width) reserveRequiredOnly();
+        const measureEnd = (): number => {
+          end.style.maxWidth = `${Math.max(0, width - reservedWidth)}px`;
+          const measured = end.getBoundingClientRect().width;
+          // The detail rail and credit link cannot shrink as much as their text.
+          // Count overflowing content; scrollWidth rounds to an integer, so allow
+          // its rounding error before treating it as actual overflow.
+          return end.scrollWidth > measured + 1 ? end.scrollWidth : measured;
+        };
+        endWidth = measureEnd();
+        if (endWidth + reservedWidth > width && reserved.some(item => !requiredSet.has(item))) {
+          reserveRequiredOnly();
+          endWidth = measureEnd();
+        }
+      } else {
+        end.style.maxWidth = "";
       }
-      item.element.toggleAttribute("data-hud-overflow-hidden", !visible);
-      item.onFit?.(visible);
-    }
+      // A manual extra may need another row. Keep the core row's controls when
+      // they fit beside the credit on their own, rather than spending their
+      // budget on the extra and hiding them just because it wraps.
+      const reservedFit = !includeEnd || endWidth + reservedWidth <= width;
+      const reservedSet = new Set(reserved);
+      const fixed = available.filter(item => item.keepVisible || item.essential || (reservedSet.has(item) && reservedFit));
+      const alwaysVisible = new Set(fixed);
+      let used = endWidth + fixed.reduce((sum, item) => sum + widths.get(item)!, 0);
+      let count = fixed.length + (endWidth > 0 ? 1 : 0);
+      used += Math.max(0, count - 1) * gap;
+      let full = false;
+      for (const item of available) {
+        let visible = alwaysVisible.has(item);
+        if (!visible && !full) {
+          const next = used + widths.get(item)! + (count > 0 ? gap : 0);
+          visible = next <= width;
+          if (visible) { used = next; count++; }
+          else full = true;
+        }
+        item.element.toggleAttribute("data-hud-overflow-hidden", !visible);
+        item.onFit?.(visible);
+      }
+    };
+    // The detail rail and provider stay in this row. A full-width break would put them under it.
+    bar.classList.remove("hud-bar--end-joined");
+    commit(true);
   }
 
   const stopMutations = ports.observeMutations(bar, schedule);
@@ -168,7 +179,7 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         element.style.order = order;
       }
       end.style.maxWidth = originalEndMaxWidth;
-      bar.classList.remove("hud-bar--fitted");
+      bar.classList.remove("hud-bar--fitted", "hud-bar--end-joined");
     },
   };
 }
