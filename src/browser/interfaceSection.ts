@@ -17,10 +17,7 @@ export interface ToolbarInterfaceOptions {
 /** Interface → Toolbar; theme/feature controls and the containing tab remain host-owned. */
 export function createToolbarInterfaceSection(settings: SettingsRegistry, options: ToolbarInterfaceOptions): ParameterSectionHandle {
   requireHostPorts(options);
-  const footer = options.document.createElement("p");
-  footer.className = "foss-earth-parameter-section__note";
-  footer.textContent = "Hiding a button never hides its tab. Every tab is available under +.";
-  return options.createParameterSection(settings, { tab: "interface", section: "toolbar", main: options.main, covers: options.covers, footer, panelStorage: options.panelStorage, refresh: options.refresh, document: options.document });
+  return options.createParameterSection(settings, { tab: "interface", section: "toolbar", main: options.main, covers: options.covers, panelStorage: options.panelStorage, refresh: options.refresh, document: options.document });
 }
 export function createPositionInterfaceSection(settings: SettingsRegistry, options: ToolbarInterfaceOptions): ParameterSectionHandle {
   requireHostPorts(options);

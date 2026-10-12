@@ -29,7 +29,18 @@ export interface PositionReadoutHandle {
   update(reading: PositionReading): void;
   /** Whether the altitude shown needs `groundHeightMeters`: `interface.position.altitude` is above ground. */
   needsGroundHeight(): boolean;
+  /** Latitude, longitude and altitude can be edited where they are drawn. */
+  setEditable(editable: boolean): void;
   destroy(): void;
+}
+
+/** A committed edit of one reading. Altitude `value` is metres. */
+export interface PositionCommit {
+  part: "latitude" | "longitude" | "altitude";
+  /** Signed degrees, or altitude in metres. Left out when that number did not change. */
+  value?: number;
+  /** Set when the altitude's ASL/AGL choice changed. */
+  reference?: AltitudeReference;
 }
 
 /** Sea-level data/resources remain host-owned. Unknown data is explicit. */
@@ -38,7 +49,13 @@ export interface PositionSeaLevelPort {
   /** The host calls listeners after its data changes; no toolbar poller. */
   subscribe?(listener: () => void): () => void;
 }
-export interface PositionReadoutOptions { seaLevel?: PositionSeaLevelPort; document?: Document }
+export interface PositionReadoutOptions {
+  seaLevel?: PositionSeaLevelPort;
+  document?: Document;
+  onCommit?(commit: PositionCommit): void;
+}
+
+const METERS_PER_FOOT = 0.3048;
 
 function createIcon(document: Document, build: (svg: SVGSVGElement) => void): SVGSVGElement {
   const svg = document.createElementNS(SVG_NS, "svg");
@@ -117,7 +134,11 @@ export function createPositionReadout(element: HTMLElement, settings: SettingsRe
   let drawnLabels: CoordinateLabels | null = null;
   let drawnParts = "";
   let destroyed = false;
+  let editable = false;
   let seaLevelNote = "";
+  let editor: HTMLFormElement | null = null;
+  let editorPart: Part | null = null;
+  const editableParts = [latitude, longitude, altitude];
   function seaLevel(reading: PositionReading): number | null {
     seaLevelNote = "";
     if ((reading.heightDatum ?? "geoid") === "geoid") return 0;
@@ -171,6 +192,172 @@ export function createPositionReadout(element: HTMLElement, settings: SettingsRe
     }
   }
 
+  function relativeMeters(): number | null {
+    if (!last || last.altitudeMeters == null) return null;
+    const reference = settings.get<AltitudeReference>(POSITION_ALTITUDE_ID);
+    const base = reference === "agl" ? groundHeight(last) : seaLevel(last);
+    return base === null ? null : last.altitudeMeters - base;
+  }
+
+  function markEditable(): void {
+    for (const part of editableParts) part.element.classList.toggle("hud-position__part--editable", editable);
+  }
+
+  let closingEditor = false;
+  function closeEditor(): void {
+    if (closingEditor) return;
+    closingEditor = true;
+    document.removeEventListener("pointerdown", onOutside, true);
+    document.removeEventListener("keydown", onKey);
+    const form = editor;
+    editor = null;
+    editorPart?.element.classList.remove("hud-position__part--editing");
+    editorPart = null;
+    form?.remove();
+    closingEditor = false;
+  }
+
+  function onOutside(event: PointerEvent): void {
+    const target = event.target;
+    if (!(target instanceof Node) || editor?.contains(target) || editorPart?.element.contains(target)) return;
+    commitEditor(true);
+  }
+
+  function onKey(event: KeyboardEvent): void {
+    if (event.key === "Escape") closeEditor();
+  }
+
+  function placeEditor(): void {
+    if (!editor || !editorPart) return;
+    const rect = editorPart.element.getBoundingClientRect();
+    const height = editor.offsetHeight;
+    const above = rect.top - height - 6;
+    editor.style.left = `${Math.max(4, rect.left)}px`;
+    editor.style.top = `${above >= 4 ? above : rect.bottom + 6}px`;
+  }
+
+  function commitEditor(close: boolean): void {
+    if (closingEditor || !editor || !editorPart || !last) return;
+    const input = editor.querySelector("input");
+    const select = editor.querySelector("select");
+    if (!input || !select) return;
+    const part = editorPart.element.dataset.positionPart;
+    const typed = input.value.trim();
+    if (part === "altitude") {
+      const unit = settings.get<AltitudeUnit>(POSITION_ALTITUDE_UNIT_ID);
+      const opened = input.dataset.opened ?? "";
+      const reference = select.value === "agl" ? "agl" : "asl";
+      const referenceChanged = reference !== settings.get<AltitudeReference>(POSITION_ALTITUDE_ID);
+      let value: number | undefined;
+      if (typed !== "" && typed !== opened) {
+        const magnitude = Number(typed);
+        if (!Number.isFinite(magnitude)) { if (close) closeEditor(); return; }
+        value = unit === "ft" ? magnitude * METERS_PER_FOOT : magnitude;
+      }
+      if (value !== undefined || referenceChanged) options.onCommit?.({ part: "altitude", ...(value === undefined ? {} : { value }), ...(referenceChanged ? { reference } : {}) });
+    } else if (part === "latitude" || part === "longitude") {
+      const current = part === "latitude" ? last.latDeg : last.lonDeg;
+      const limit = part === "latitude" ? 90 : 180;
+      const magnitude = typed === "" ? Math.abs(current) : Math.abs(Number(typed));
+      if (!Number.isFinite(magnitude) || magnitude > limit) { if (close) closeEditor(); return; }
+      const negative = select.value === "S" || select.value === "W";
+      const value = negative && magnitude !== 0 ? -magnitude : magnitude;
+      if (value !== current) options.onCommit?.({ part, value });
+    }
+    if (close) closeEditor();
+  }
+
+  function openEditor(part: Part): void {
+    if (!editable || !last || destroyed || editorPart === part) return;
+    const name = part.element.dataset.positionPart;
+    if (name !== "latitude" && name !== "longitude" && name !== "altitude") return;
+    closeEditor();
+    editorPart = part;
+    part.element.classList.add("hud-position__part--editing");
+    const form = document.createElement("form");
+    form.className = "hud-position-editor";
+    form.addEventListener("submit", (event) => { event.preventDefault(); commitEditor(true); });
+    form.addEventListener("focusout", (event) => {
+      const next = event.relatedTarget;
+      if (next instanceof Node && form.contains(next)) return;
+      commitEditor(true);
+    });
+    const input = document.createElement("input");
+    input.type = "text";
+    input.inputMode = "decimal";
+    input.autocomplete = "off";
+    const select = document.createElement("select");
+    const addOption = (value: string, label: string): void => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      select.append(option);
+    };
+    if (name === "latitude") {
+      input.setAttribute("aria-label", "Latitude");
+      input.value = Math.abs(last.latDeg).toFixed(4);
+      select.setAttribute("aria-label", "Latitude hemisphere");
+      addOption("N", "N");
+      addOption("S", "S");
+      select.value = last.latDeg < 0 ? "S" : "N";
+    } else if (name === "longitude") {
+      input.setAttribute("aria-label", "Longitude");
+      input.value = Math.abs(last.lonDeg).toFixed(4);
+      select.setAttribute("aria-label", "Longitude hemisphere");
+      addOption("E", "E");
+      addOption("W", "W");
+      select.value = last.lonDeg < 0 ? "W" : "E";
+    } else {
+      const unit = settings.get<AltitudeUnit>(POSITION_ALTITUDE_UNIT_ID);
+      const relative = relativeMeters();
+      input.setAttribute("aria-label", "Altitude");
+      input.value = relative === null ? "" : unit === "ft" ? String(Math.round(relative / METERS_PER_FOOT)) : String(Math.round(relative));
+      input.dataset.opened = input.value;
+      select.setAttribute("aria-label", "Altitude reference");
+      addOption("asl", "ASL");
+      addOption("agl", "AGL");
+      select.value = settings.get<AltitudeReference>(POSITION_ALTITUDE_ID);
+    }
+    input.addEventListener("input", () => {
+      if (input.value.trim().startsWith("-")) {
+        input.value = input.value.trim().replace(/^-/, "");
+        const flip: Record<string, string> = { N: "S", S: "N", E: "W", W: "E" };
+        if (flip[select.value]) select.value = flip[select.value];
+      }
+      input.style.width = `calc(${Math.max(input.value.length, 1)}ch + 8px)`;
+    });
+    input.style.width = `calc(${Math.max(input.value.length, 1)}ch + 8px)`;
+    select.addEventListener("change", () => commitEditor(false));
+    form.append(input, select);
+    editor = form;
+    document.body.append(form);
+    placeEditor();
+    input.focus();
+    input.select();
+    document.addEventListener("pointerdown", onOutside, true);
+    document.addEventListener("keydown", onKey);
+  }
+
+  function onPartPointerDown(event: PointerEvent): void {
+    if (!editable) return;
+    const part = editableParts.find(item => item.element === event.currentTarget);
+    if (!part) return;
+    event.preventDefault();
+    event.stopPropagation();
+    openEditor(part);
+  }
+
+  function onPartClick(event: MouseEvent): void {
+    if (!editable) return;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  for (const part of editableParts) {
+    part.element.addEventListener("pointerdown", onPartPointerDown);
+    part.element.addEventListener("click", onPartClick);
+  }
+
   const stopWatching = [POSITION_COORDINATE_LABELS_ID, POSITION_ALTITUDE_ID, POSITION_ALTITUDE_UNIT_ID, POSITION_SEA_LEVEL_GRID_ID]
     .filter(id => settings.has(id))
     .map(id => settings.watch(id, draw));
@@ -181,13 +368,24 @@ export function createPositionReadout(element: HTMLElement, settings: SettingsRe
       if (destroyed) return;
       last = reading;
       draw();
+      if (editor) placeEditor();
     },
     needsGroundHeight: () => settings.get<AltitudeReference>(POSITION_ALTITUDE_ID) === "agl",
+    setEditable(next) {
+      editable = next;
+      markEditable();
+      if (!next) closeEditor();
+    },
     destroy() {
       if (destroyed) return;
       destroyed = true;
+      closeEditor();
       stopSeaLevel?.();
       for (const stop of stopWatching) stop();
+      for (const part of editableParts) {
+        part.element.removeEventListener("pointerdown", onPartPointerDown);
+        part.element.removeEventListener("click", onPartClick);
+      }
       element.replaceChildren();
     },
   };

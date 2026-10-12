@@ -58,6 +58,7 @@ describe("position readout", () => {
   });
 
   it("offers the three as one row of choices, nothing first and icons last", () => {
+    expect(settings.spec("interface.position.coordinateLabels")!.label).toBe("lat/lon");
     expect(settings.spec("interface.position.coordinateLabels")!.choices!.map(choice => choice.id)).toEqual(["none", "words", "icons"]);
   });
 
@@ -166,6 +167,43 @@ describe("position readout", () => {
     settings.set("interface.position.coordinateLabels", "words");
 
     expect(chip.childNodes).toHaveLength(0);
+  });
+
+  it("edits a reading on the chip only while the host allows it", () => {
+    const onCommit = vi.fn();
+    readout.destroy();
+    readout = createPositionReadout(chip, settings, { onCommit });
+    readout.update({ ...MINNEAPOLIS, altitudeMeters: 250_000 });
+    part("latitude")!.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    expect(document.querySelector(".hud-position-editor")).toBeNull();
+
+    readout.setEditable(true);
+    expect(part("latitude")!.classList.contains("hud-position__part--editable")).toBe(true);
+    const click = new MouseEvent("click", { bubbles: true, cancelable: true });
+    part("latitude")!.dispatchEvent(click);
+    expect(click.defaultPrevented).toBe(true);
+
+    part("latitude")!.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    const editor = document.querySelector<HTMLFormElement>(".hud-position-editor")!;
+    const input = editor.querySelector("input")!;
+    expect(input.value).toBe("44.9778");
+    expect(editor.querySelector("select")!.value).toBe("N");
+    input.value = "45.1";
+    editor.requestSubmit();
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith({ part: "latitude", value: 45.1 });
+    expect(document.querySelector(".hud-position-editor")).toBeNull();
+
+    onCommit.mockClear();
+    part("altitude")!.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, cancelable: true }));
+    const altitude = document.querySelector<HTMLFormElement>(".hud-position-editor")!;
+    expect(altitude.querySelector("input")!.value).toBe("250000");
+    const reference = altitude.querySelector("select")!;
+    reference.value = "agl";
+    reference.dispatchEvent(new Event("change", { bubbles: true }));
+    expect(onCommit).toHaveBeenCalledExactlyOnceWith({ part: "altitude", reference: "agl" });
+    readout.setEditable(false);
+    expect(document.querySelector(".hud-position-editor")).toBeNull();
+    expect(part("latitude")!.classList.contains("hud-position__part--editable")).toBe(false);
   });
 });
 

@@ -9,6 +9,16 @@ export const POSITION_ALTITUDE_UNIT_ID = "interface.position.altitudeUnit";
 export const POSITION_SEA_LEVEL_GRID_ID = "interface.position.seaLevelGrid";
 const METERS_PER_FOOT = 0.3048;
 
+/** The altitude as a whole number of metres or feet, before the readout shortens large heights. */
+export function roundAltitude(meters: number, unit: AltitudeUnit): number {
+  return Math.round(unit === "ft" ? meters / METERS_PER_FOOT : meters);
+}
+
+/** A typed metres or feet amount, back in metres. */
+export function altitudeMetersFromAmount(amount: number, unit: AltitudeUnit): number {
+  return unit === "ft" ? amount * METERS_PER_FOOT : amount;
+}
+
 /** A length as the toolbar writes it: whole metres, then km and Mm as it grows. */
 export function formatDistance(meters: number): string {
   if (meters >= 1_000_000) return `${(meters / 1_000_000).toFixed(1)}Mm`;
@@ -26,8 +36,9 @@ export function formatAltitude(altitudeMeters: number | null, baseMeters: number
   const suffix = reference === "asl" ? "ASL" : "AGL";
   if (altitudeMeters === null || baseMeters === null) return `\u2014${unit} ${suffix}`;
   const meters = altitudeMeters - baseMeters;
-  const value = unit === "ft" ? `${Math.round(meters / METERS_PER_FOOT)}ft`
-    : Math.abs(meters) < 100_000 ? `${Math.round(meters)}m` : formatDistance(meters);
+  const rounded = roundAltitude(meters, unit);
+  const value = unit === "ft" ? `${rounded}ft`
+    : Math.abs(meters) < 100_000 ? `${rounded}m` : formatDistance(meters);
   return `${value} ${suffix}`;
 }
 

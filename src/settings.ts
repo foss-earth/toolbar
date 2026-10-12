@@ -11,8 +11,8 @@ export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
   unit: "none",
   kind: "choice",
   choices: [
-    { id: "compact", label: "Compact", description: "Small horizontal rail beside the basemap." },
-    { id: "expanded", label: "Expanded", description: "Wider rail above the basemap." },
+    { id: "compact", label: "Compact", shortLabel: "Compact", description: "Small horizontal rail beside the basemap." },
+    { id: "expanded", label: "Expanded", shortLabel: "Expanded", description: "Wider rail above the basemap." },
   ],
   default: "compact",
   defaultReason: "Keep the standard map controls compact; expand only when requested.",
@@ -24,17 +24,18 @@ export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
 export const TOOLBAR_EDIT_PRIORITIES_ID = "interface.toolbar.editPriorities";
 export function toolbarPriorityParameterId(item: string): string { return `interface.toolbar.priority.${item}`; }
 
-export function toolbarVisibility(id: string, label: string, description: string, fallback: ToolbarVisibility, reason: string, source: string): ParameterSpec<ToolbarVisibility> {
+export function toolbarVisibility(id: string, label: string, description: string, fallback: ToolbarVisibility, reason: string, source: string, mark?: ParameterSpec["mark"]): ParameterSpec<ToolbarVisibility> {
   return {
     id,
     label,
+    ...(mark ? { mark } : {}),
     description: `${description} On keeps it shown, wrapping if needed. Auto shows it when it fits in one row, in priority order. Off hides it.`,
     unit: "none",
     kind: "choice",
     choices: [
-      { id: "on", label: "On", icon: "toggle-on", description: "Always show, wrapping if needed." },
+      { id: "on", label: "On", icon: "line", description: "Always show, wrapping if needed." },
       { id: "auto", label: "Auto", shortLabel: "A", description: "Show when it fits in one row, in priority order." },
-      { id: "off", label: "Off", icon: "toggle-off", description: "Keep hidden." },
+      { id: "off", label: "Off", icon: "circle", description: "Keep hidden." },
     ],
     legacyValues: [
       { value: true, replacement: "on" },
@@ -63,6 +64,8 @@ export interface ToolbarItemDescriptor {
   defaultVisibility?: ToolbarVisibility;
   /** Still reserve room when priorities change. */
   essential?: boolean;
+  /** Drawn before the visibility label. Priority fields stay text. */
+  mark?: ParameterSpec["mark"];
   source: string;
 }
 
@@ -75,7 +78,7 @@ export function createToolbarParameters(items: readonly ToolbarItemDescriptor[])
     ids.add(item.id);
   }
   return [
-    ...items.flatMap(item => item.visibilityId ? [toolbarVisibility(item.visibilityId, item.label, item.description, item.defaultVisibility ?? "auto", item.defaultReason, item.source)] : []),
+    ...items.flatMap(item => item.visibilityId ? [toolbarVisibility(item.visibilityId, item.label, item.description, item.defaultVisibility ?? "auto", item.defaultReason, item.source, item.mark)] : []),
     {
       id: TOOLBAR_EDIT_PRIORITIES_ID, label: "Priorities",
       description: "Auto uses the default toolbar order. Custom shows priority numbers beside each toolbar control and uses them to decide the order and which automatic items fit first. Returning to Auto keeps your custom numbers for later.",
@@ -101,7 +104,7 @@ const POSITION_READOUT = { tab: INTERFACE_TAB, section: "position", level: "main
 export const POSITION_PARAMETERS: readonly ParameterSpec[] = [
   {
     id: POSITION_COORDINATE_LABELS_ID,
-    label: "Latitude and longitude",
+    label: "lat/lon",
     description: "How the toolbar's position readout says which number is which. None leaves it to the N or S and E or W after each number. Words writes lat and lon before them. Icons draws a globe with only its parallels before the latitude and one with only its meridians before the longitude.",
     unit: "none",
     kind: "choice",
@@ -114,7 +117,7 @@ export const POSITION_PARAMETERS: readonly ParameterSpec[] = [
     defaultReason: "N or S after the latitude and E or W after the longitude already say which is which, in the narrowest chip.",
     home: POSITION_READOUT,
     appliesLive: true,
-    source: "src/hud/positionReadout.ts",
+    source: "@foss-earth/toolbar/src/browser/positionReadout.ts",
   },
   {
     id: POSITION_ALTITUDE_ID,
@@ -130,7 +133,7 @@ export const POSITION_PARAMETERS: readonly ParameterSpec[] = [
     defaultReason: "It does not depend on which terrain has loaded, and is the altitude an altimeter and a chart give.",
     home: POSITION_READOUT,
     appliesLive: true,
-    source: "src/hud/positionReadout.ts",
+    source: "@foss-earth/toolbar/src/browser/positionReadout.ts",
   },
   {
     id: POSITION_ALTITUDE_UNIT_ID,
@@ -146,7 +149,7 @@ export const POSITION_PARAMETERS: readonly ParameterSpec[] = [
     defaultReason: "The unit of the zoom distance beside it. An application that flies sets feet.",
     home: POSITION_READOUT,
     appliesLive: true,
-    source: "src/hud/positionReadout.ts",
+    source: "@foss-earth/toolbar/src/browser/positionReadout.ts",
   },
 ];
 

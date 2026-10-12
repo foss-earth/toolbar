@@ -17,6 +17,8 @@ export interface PerformanceMetricDefinition {
   settingsLabel: string;
   tooltip: string;
   format(snapshot: ToolbarPerformanceSnapshot): string | null;
+  /** A mark drawn before the formatted value. */
+  mark?: "polygon";
 }
 
 export const PERFORMANCE_METRIC_DEFINITIONS: readonly PerformanceMetricDefinition[] = [
@@ -40,9 +42,10 @@ export const PERFORMANCE_METRIC_DEFINITIONS: readonly PerformanceMetricDefinitio
   },
   {
     id: "activeMeshes",
-    settingsLabel: "Active meshes (#⬟)",
+    settingsLabel: "Active meshes",
     tooltip: "Babylon meshes currently active in the scene.",
-    format: (snapshot) => `${snapshot.activeMeshes}⬟`,
+    mark: "polygon",
+    format: (snapshot) => String(snapshot.activeMeshes),
   },
   {
     id: "drawCalls",

@@ -1,7 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi } from "vitest";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
-import type { ParameterSectionOptions } from "@foss-earth/ui/browser";
 import { POSITION_PARAMETERS, createToolbarParameters, type ToolbarItemDescriptor } from "../src/settings.js";
 import { POSITION_SEA_LEVEL_GRID_ID } from "../src/position.js";
 import { createPositionReadout } from "../src/browser/positionReadout.js";
@@ -110,7 +109,7 @@ describe("toolbar explicit host ports", () => {
     const settings = registry(); const create = vi.fn(() => ({ element: document.createElement("div"), destroy: () => {} }));
     const refresh = { subscribe: vi.fn(() => () => {}) };
     createToolbarInterfaceSection(settings, { createParameterSection: create, panelStorage: null, document, refresh }); createPositionInterfaceSection(settings, { createParameterSection: create, panelStorage: null, document, refresh });
-    expect(create.mock.calls[0][0]).toBe(settings); expect(create.mock.calls[0][1]).toMatchObject({ tab: "interface", section: "toolbar", panelStorage: null }); expect(create.mock.calls[0][1].footer?.textContent).toMatch(/Hiding a button/); expect(create.mock.calls[1][1].section).toBe("position");
+    expect(create.mock.calls[0][0]).toBe(settings); expect(create.mock.calls[0][1]).toMatchObject({ tab: "interface", section: "toolbar", panelStorage: null }); expect(create.mock.calls[0][1].footer).toBeUndefined(); expect(create.mock.calls[1][1].section).toBe("position");
     expect(create.mock.calls[0][1].refresh).toBe(refresh); expect(create.mock.calls[1][1].refresh).toBe(refresh); expect(refresh.subscribe).not.toHaveBeenCalled();
     expect(create.mock.calls[0][1].document).toBe(document); expect(create.mock.calls[1][1].document).toBe(document);
   });
@@ -119,11 +118,11 @@ describe("toolbar explicit host ports", () => {
     expect(() => createToolbarInterfaceSection(registry(), { createParameterSection: create, document: ownDocument } as never)).toThrow(/refresh port/);
     expect(create).not.toHaveBeenCalled(); expect(ownDocument.createElement).not.toHaveBeenCalled();
   });
-  it("creates its note in the supplied Document", () => {
-    const ownDocument = document.implementation.createHTMLDocument("Host"); let footer: HTMLElement | undefined;
-    const create = vi.fn((_settings: Parameters<typeof createToolbarInterfaceSection>[0], options: ParameterSectionOptions) => { footer = options.footer; return { element: ownDocument.createElement("div"), destroy() {} }; });
+  it("adds no toolbar note", () => {
+    const ownDocument = document.implementation.createHTMLDocument("Host");
+    const create = vi.fn(() => ({ element: ownDocument.createElement("div"), destroy() {} }));
     createToolbarInterfaceSection(registry(), { createParameterSection: create, document: ownDocument, refresh: { subscribe: () => () => {} } });
-    expect(footer?.ownerDocument).toBe(ownDocument);
+    expect(create.mock.calls[0][1].footer).toBeUndefined();
   });
   it("formats view/readout values and retains performance chip nodes across host updates", () => {
     const chip = document.createElement("button"); const hud = createStatusHud(chip, registry()); hud.update({ latDeg: 45, lonDeg: -93, headingDeg: -1, pitchDeg: 5, zoomMeters: 1234 }); expect(chip.textContent).toBe("45.0000°N 93.0000°W h359° p05° z1km"); hud.destroy();

@@ -21,7 +21,7 @@ try {
     handles.push(handle); dom.window.document.querySelector("main").append(handle.element);
   }
   assert.equal(listeners.length, 2);
-  assert.match(handles[0].element.textContent, /Hiding a button never hides its tab/);
+  assert.doesNotMatch(handles[0].element.textContent, /Hiding a button/);
   assert.equal(handles[0].element.dataset.settingsSection, "interface/toolbar");
   assert.equal(handles[1].element.dataset.settingsSection, "interface/position");
   assert.ok(handles[0].element.querySelector("input"));

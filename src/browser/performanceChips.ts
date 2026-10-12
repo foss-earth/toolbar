@@ -1,5 +1,22 @@
 import { PERFORMANCE_METRIC_DEFINITIONS, type PerformanceMetricId, type ToolbarPerformanceSnapshot } from "../performance.js";
 
+/** One polygon, the mark for a mesh: a single drawn surface. */
+function polygonIcon(document: Document): SVGSVGElement {
+  const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+  svg.setAttribute("viewBox", "0 0 24 24");
+  svg.setAttribute("class", "perf-chip__icon");
+  svg.setAttribute("aria-hidden", "true");
+  svg.setAttribute("focusable", "false");
+  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+  path.setAttribute("fill", "none");
+  path.setAttribute("stroke", "currentColor");
+  path.setAttribute("stroke-width", "2");
+  path.setAttribute("stroke-linejoin", "round");
+  path.setAttribute("d", "M12 3.5 20 9.1 17 20H7L4 9.1Z");
+  svg.append(path);
+  return svg;
+}
+
 export function renderPerformanceChips(
   element: HTMLElement,
   snapshot: ToolbarPerformanceSnapshot,
@@ -28,6 +45,14 @@ export function renderPerformanceChips(
         unit.className = "perf-chip__unit";
         unit.textContent = "fps";
         chip.append(number, unit);
+      }
+      if (number.textContent !== value) number.textContent = value;
+    } else if (metric.mark === "polygon") {
+      let number = chip.querySelector<HTMLElement>(".perf-chip__value");
+      if (!number) {
+        number = document.createElement("span");
+        number.className = "perf-chip__value";
+        chip.replaceChildren(polygonIcon(document), number);
       }
       if (number.textContent !== value) number.textContent = value;
     } else if (chip.textContent !== value) chip.textContent = value;
