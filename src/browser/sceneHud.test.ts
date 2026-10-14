@@ -24,8 +24,8 @@ function mount() {
 
 const CREDIT = { assetId: "a", text: "Greg Zaal", license: "CC0", url: "https://polyhaven.com/a/buikslotermeerplein" };
 
-describe("the panorama's end of the HUD bar", () => {
-  it("replaces the map's group with the panorama's credit while entered, with no close button", () => {
+describe("the sphere's end of the HUD bar", () => {
+  it("replaces the map's group with the sphere's credit while entered, with no close button", () => {
     const { slot, mapSource, position, hud, show } = mount();
     expect(hud.element.hidden).toBe(true);
     expect(slot.firstElementChild).toBe(hud.element);
@@ -65,7 +65,7 @@ describe("the panorama's end of the HUD bar", () => {
     hud.destroy();
   });
 
-  it("leaves the map's group alone while a panorama is prepared or entered, when the map still shows", () => {
+  it("leaves the map's group alone while a sphere is prepared or entered, when the map still shows", () => {
     const { mapSource, hud, show } = mount();
     show("entering", [CREDIT]);
     expect(hud.element.hidden).toBe(true);

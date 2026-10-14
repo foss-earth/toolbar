@@ -5,7 +5,7 @@ import { createSettingsRegistry } from "@foss-earth/ui/settings";
 import { POSITION_PARAMETERS } from "../settings.js";
 import { createStatusHud } from "./statusHud.js";
 
-it("shows live panorama orientation and FOV at the picture's position, then restores globe distance", () => {
+it("shows live sphere orientation and FOV at the picture's position, then restores globe distance", () => {
   const settings = createSettingsRegistry({ storage: null });
   settings.register(POSITION_PARAMETERS);
   const chip = document.createElement("button");
@@ -48,7 +48,7 @@ it("replaces the globe altitude with an explicitly unknown picture height", () =
   }
 });
 
-it("keeps picture and ground height datums distinct for panorama AGL", () => {
+it("keeps picture and ground height datums distinct for sphere AGL", () => {
   const settings = createSettingsRegistry({ storage: null });
   settings.register(POSITION_PARAMETERS);
   settings.set("interface.position.altitude", "agl");

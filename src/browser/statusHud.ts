@@ -11,7 +11,7 @@ export type ToolbarViewReading = {
   zoomMeters: number;
   verticalFovDeg?: undefined;
 } | {
-  /** The panorama camera's vertical field of view in degrees; replaces zoom distance when supplied. */
+  /** The sphere camera's vertical field of view in degrees; replaces zoom distance when supplied. */
   verticalFovDeg: number;
   zoomMeters?: number;
 });

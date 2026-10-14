@@ -391,7 +391,7 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
 
 /* Existing supplied scene-credit and map-rate readout presentation. */
 /*
- * While a panorama is entered its credit takes the bar's right end, where the
+ * While a sphere is entered its credit takes the bar's right end, where the
  * basemap's is. Its tab and Escape are the ways out.
  */
 .scene-hud {
