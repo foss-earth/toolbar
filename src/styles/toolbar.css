@@ -250,6 +250,14 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
   max-height: 100%;
 }
 
+.north-button text {
+  fill: #fff;
+}
+
+:root[data-theme="light"] .north-button text {
+  fill: #0f172a;
+}
+
 .settings-button {
   font-size: 18px;
 }
