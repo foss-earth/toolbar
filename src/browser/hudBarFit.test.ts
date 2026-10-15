@@ -201,6 +201,54 @@ describe("one-row toolbar fitting", () => {
     f.fitting.destroy();
   });
 
+  it("keeps the provider in the corner only when every wanted item fits", () => {
+    const f = fixture(400);
+    expect(f.shown()).toEqual(["north", "help", "fps", "renderer", "input"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    expect(f.end.style.order).toBe("");
+    f.resize(300);
+    expect(f.shown()).toEqual(["north", "help", "fps", "renderer"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(true);
+    expect(f.end.style.order).toBe("");
+    expect([f.north, f.help, f.fps, f.renderer, f.input].map(element => element.style.order)).toEqual(["0", "1", "2", "3", "4"]);
+    f.renderer.hidden = true;
+    f.resize(400);
+    expect(f.shown()).toEqual(["north", "help", "fps", "input"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    f.fitting.destroy();
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    expect(f.end.style.order).toBe("");
+  });
+
+  it("fits inside the bar's padding so the provider does not wrap on the split toolbar", () => {
+    // Border box is exactly the row; the 4 px of padding on each side is not room for an item.
+    const f = fixture(166, 100);
+    f.bar.style.padding = "2px 4px";
+    f.fps.hidden = true;
+    f.renderer.hidden = true;
+    f.input.hidden = true;
+    f.fitting.update(); f.flush();
+    expect(f.shown()).toEqual(["north"]);
+    f.fitting.destroy();
+  });
+
+  it("orders the provider after the last first-row item when a pinned control wraps", () => {
+    const f = fixture(343, 500);
+    for (const item of f.items) if (item.priority <= 2) item.reserveSpace = true;
+    const position = f.add("position", 300, 7, true);
+    f.fitting.update(); f.flush();
+    expect(f.shown()).toEqual(["north", "help", "fps", "position"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(true);
+    expect(f.end.style.order).toBe("3");
+    expect([f.north, f.help, f.fps, f.renderer, f.input, position].map(element => element.style.order))
+      .toEqual(["0", "1", "2", "4", "5", "6"]);
+    f.fitting.destroy();
+    expect(f.end.style.order).toBe("");
+    expect(position.style.order).toBe("");
+    expect(f.north.style.order).toBe("");
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+  });
+
   it("uses priority order and the supplied tie order even when DOM order differs", () => {
     const f = fixture(400);
     f.items.find(item => item.element === f.renderer)!.priority = 1.5;

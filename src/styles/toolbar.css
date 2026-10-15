@@ -28,6 +28,12 @@
   --foss-hud-right: calc(var(--foss-hud-side) + env(safe-area-inset-right, 0px));
 }
 
+/* Flush: the bar sits on the bottom and side edges. Room above a home indicator, when chosen, still lifts it. */
+html[data-world-edges="flush"] {
+  --foss-hud-gap: 0px;
+  --foss-hud-side: 0px;
+}
+
 /* Opt-in room above a phone's home indicator, so a swipe home does not press the bar. */
 html[data-hud-home-clearance="true"] {
   --foss-hud-gap: 16px;
@@ -83,16 +89,64 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
   pointer-events: auto;
 }
 
+/*
+ * Flush: the items meet with no gap, so each end of the bar is one block cut
+ * from the world's corner, and the world is not drawn under them. The glass
+ * then sits on the window's colour instead of on the world: an underlay in
+ * the bar's stacking context, under every item's own background.
+ */
+html[data-world-edges="flush"] :is(.hud-bar, .hud-bar-end, .scene-hud, .scene-credits-slot) {
+  gap: 0;
+}
+html[data-world-edges="flush"] .hud-bar {
+  align-items: end;
+}
+html[data-world-edges="flush"] .hud-bar :is(.hud-chip, .hud-circle-button) {
+  position: relative;
+  border-bottom-color: transparent;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+html[data-world-edges="flush"] .hud-bar :is(.hud-chip, .hud-circle-button)::before {
+  position: absolute;
+  z-index: -1;
+  inset: -1px;
+  background: rgb(8, 15, 27);
+  content: "";
+  pointer-events: none;
+}
+:root[data-theme="light"][data-world-edges="flush"] .hud-bar :is(.hud-chip, .hud-circle-button)::before {
+  background: #fff;
+}
+
 .hud-bar--fitted > *,
 .hud-bar--fitted .perf-chip {
   flex-shrink: 0;
 }
 
-/* Keep omitted readings measurable without adding a row or taking focus. */
+/*
+ * Keep omitted readings measurable without adding a row or taking focus.
+ * Important: the fitting counts them out of the row, so no item's own style
+ * may put them back in it (flush's underlay positions every item).
+ */
 .hud-bar--fitted [data-hud-overflow-hidden] {
-  position: absolute;
-  visibility: hidden;
-  pointer-events: none;
+  position: absolute !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/*
+ * The first row stays on the bar's edge. Rows that a person's pinned controls
+ * need go above it on a bar at the bottom, and below it on one at the top.
+ */
+.hud-bar--fitted {
+  flex-wrap: wrap-reverse;
+  /* Share one cross-edge, so a taller map chip does not count as its own row. */
+  align-items: end;
+}
+html[data-world-presentation="split"][data-toolbar-edge="top"] .hud-bar--fitted {
+  flex-wrap: wrap;
 }
 
 .hud-bar [data-hud-choice-hidden] {
@@ -102,6 +156,8 @@ html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-
 /* Hosts mark their arbitrary credits/end slot; its contents stay feature-owned. */
 .hud-bar-end { margin-left: auto; display: inline-flex; align-items: center; gap: 3px; min-width: 0; }
 .hud-bar--fitted > .hud-bar-end { order: 1000; min-width: 0; flex-shrink: 1; }
+/* Too narrow for the corner: the end is the toolbar's last item. */
+.hud-bar--end-attached > .hud-bar-end { margin-left: 0; }
 
 .hud-chip,
 .hud-circle-button {

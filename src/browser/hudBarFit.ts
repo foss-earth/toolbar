@@ -15,7 +15,7 @@ export interface HudBarFitItem {
 export interface HudBarLayoutPorts {
   requestFrame(callback: FrameRequestCallback): number;
   cancelFrame(handle: number): void;
-  computedStyle(element: HTMLElement): Pick<CSSStyleDeclaration, "columnGap">;
+  computedStyle(element: HTMLElement): Pick<CSSStyleDeclaration, "columnGap"> & Partial<Pick<CSSStyleDeclaration, "paddingLeft" | "paddingRight" | "borderLeftWidth" | "borderRightWidth">>;
   createResizeObserver?(changed: () => void): Pick<ResizeObserver, "observe" | "unobserve" | "disconnect"> | null;
   observeMutations(element: HTMLElement, changed: () => void): () => void;
   subscribeResize(changed: () => void): () => void;
@@ -37,6 +37,11 @@ export function browserHudBarLayoutPorts(window: Window & typeof globalThis): Hu
   };
 }
 
+function horizontalInset(style: Pick<CSSStyleDeclaration, "columnGap"> & Partial<Pick<CSSStyleDeclaration, "paddingLeft" | "paddingRight" | "borderLeftWidth" | "borderRightWidth">>): number {
+  return [style.paddingLeft, style.paddingRight, style.borderLeftWidth, style.borderRightWidth]
+    .reduce((sum, value) => sum + (Number.parseFloat(value ?? "") || 0), 0);
+}
+
 function defaultLayoutPorts(bar: HTMLElement): HudBarLayoutPorts {
   const window = bar.ownerDocument.defaultView;
   if (!window) throw new TypeError("HUD fitting without a browser realm requires explicit host layout ports.");
@@ -47,6 +52,9 @@ function defaultLayoutPorts(bar: HTMLElement): HudBarLayoutPorts {
  * Fit automatic items into one row before the bar's right end. Overflow items
  * remain measurable, but invisible and outside the flex layout, so a resize or
  * changing readout can bring them back without temporarily showing another row.
+ * The end keeps the corner only when every wanted item fits there. Otherwise it
+ * is the last item of the first row, and a pinned control that does not fit
+ * takes the row off that edge.
  */
 export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => readonly HudBarFitItem[], ports: HudBarLayoutPorts = defaultLayoutPorts(bar)): { update(): void; destroy(): void } {
   bar.classList.add("hud-bar--fitted");
@@ -55,6 +63,7 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
   const observed = new Set<HTMLElement>();
   const managed = new Map<HTMLElement, string>();
   const originalEndMaxWidth = end.style.maxWidth;
+  const originalEndOrder = end.style.order;
   const schedule = (): void => {
     if (!disposed && frame === null) frame = ports.requestFrame(() => {
       frame = null;
@@ -89,10 +98,13 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         observed.add(item.element);
       }
     }
-    const width = bar.getBoundingClientRect().width;
+    const barStyle = ports.computedStyle(bar);
+    // Flex lays items out in the content box. The border box includes the
+    // split bar's padding, and counting that padding fits a provider that then wraps.
+    const width = bar.getBoundingClientRect().width - horizontalInset(barStyle);
     // Unmounted tabs and DOM-only tests have no usable geometry yet.
     if (width <= 0) return;
-    const gap = Number.parseFloat(ports.computedStyle(bar).columnGap) || 0;
+    const gap = Number.parseFloat(barStyle.columnGap) || 0;
     const available = items.filter(item => !item.element.closest("[hidden]"));
     const widths = new Map(available.map(item => [item, item.element.getBoundingClientRect().width]));
     // Leave room for the core controls even when attribution text is long.
@@ -157,6 +169,33 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         item.element.toggleAttribute("data-hud-overflow-hidden", !visible);
         item.onFit?.(visible);
       }
+      // The provider stays on the first row: in the corner when every wanted
+      // item fits, and directly after the last item that fits otherwise.
+      const visible = available.filter(item => !item.element.hasAttribute("data-hud-overflow-hidden"));
+      const endLayoutWidth = includeEnd ? end.getBoundingClientRect().width : 0;
+      let rowUsed = endLayoutWidth;
+      let rowCount = endLayoutWidth > 0 ? 1 : 0;
+      let fitted = 0;
+      for (const item of visible) {
+        const next = rowUsed + widths.get(item)! + (rowCount > 0 ? gap : 0);
+        if (next <= width) {
+          rowUsed = next;
+          rowCount += 1;
+          fitted += 1;
+        } else break;
+      }
+      const overflows = fitted < visible.length;
+      bar.classList.toggle("hud-bar--end-attached", overflows || available.some(item => item.element.hasAttribute("data-hud-overflow-hidden")));
+      if (!overflows) {
+        end.style.order = originalEndOrder;
+        return;
+      }
+      const lastOrder = fitted > 0 ? Number(visible[fitted - 1]!.element.style.order) : -1;
+      end.style.order = String(lastOrder + 1);
+      for (const item of items) {
+        const order = Number(item.element.style.order);
+        if (order > lastOrder) item.element.style.order = String(order + 1);
+      }
     };
     // The detail rail and provider stay in this row. A full-width break would put them under it.
     bar.classList.remove("hud-bar--end-joined");
@@ -179,7 +218,8 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         element.style.order = order;
       }
       end.style.maxWidth = originalEndMaxWidth;
-      bar.classList.remove("hud-bar--fitted", "hud-bar--end-joined");
+      end.style.order = originalEndOrder;
+      bar.classList.remove("hud-bar--fitted", "hud-bar--end-joined", "hud-bar--end-attached");
     },
   };
 }
