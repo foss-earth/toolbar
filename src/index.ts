@@ -3,7 +3,7 @@ export * from "./position.js";
 export * from "./performance.js";
 export * from "./hudButtonVisibility.js";
 export type { HudBarButtonItem, HudBarSlotItem, HudBarItem, HudBarOptions, HudBarHandle } from "./browser/hudBar.js";
-export type { HudBarFitItem, HudBarLayoutPorts } from "./browser/hudBarFit.js";
+export { hudBarEndPlace, type HudBarEndPlace, type HudBarFitItem, type HudBarFitOptions, type HudBarLayoutPorts } from "./browser/hudBarFit.js";
 export type { ToolbarLauncherPort } from "./browser/launcher.js";
 export type { PositionReading, PositionReadoutOptions, PositionReadoutHandle, PositionSeaLevelPort } from "./browser/positionReadout.js";
 export type { ToolbarViewReading, CameraAltitude, StatusHudHandle } from "./browser/statusHud.js";

@@ -1,3 +1,15 @@
+/** Where the bar's end sits. Off keeps the corner; the other two join the toolbar. */
+export type HudBarEndPlace = "off" | "when-full" | "always";
+
+export function hudBarEndPlace(value: unknown): HudBarEndPlace {
+  return value === "when-full" || value === "always" ? value : "off";
+}
+
+export interface HudBarFitOptions {
+  /** Read on each fit. Omitted means the end stays in the corner. */
+  endPlace?: () => HudBarEndPlace;
+}
+
 export interface HudBarFitItem {
   element: HTMLElement;
   /** Lower numbers get the available space first. */
@@ -52,11 +64,12 @@ function defaultLayoutPorts(bar: HTMLElement): HudBarLayoutPorts {
  * Fit automatic items into one row before the bar's right end. Overflow items
  * remain measurable, but invisible and outside the flex layout, so a resize or
  * changing readout can bring them back without temporarily showing another row.
- * The end keeps the corner only when every wanted item fits there. Otherwise it
- * is the last item of the first row, and a pinned control that does not fit
- * takes the row off that edge.
+ * The end stays in the corner unless the host joins it to the toolbar. Joining
+ * when the row is full puts it directly after the last item that fits. Always
+ * joining keeps it there even when the corner has room. A pinned control that
+ * does not fit takes the row off that edge, and the end stays on the first row.
  */
-export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => readonly HudBarFitItem[], ports: HudBarLayoutPorts = defaultLayoutPorts(bar)): { update(): void; destroy(): void } {
+export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => readonly HudBarFitItem[], ports: HudBarLayoutPorts = defaultLayoutPorts(bar), options: HudBarFitOptions = {}): { update(): void; destroy(): void } {
   bar.classList.add("hud-bar--fitted");
   let frame: number | null = null;
   let disposed = false;
@@ -169,8 +182,8 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         item.element.toggleAttribute("data-hud-overflow-hidden", !visible);
         item.onFit?.(visible);
       }
-      // The provider stays on the first row: in the corner when every wanted
-      // item fits, and directly after the last item that fits otherwise.
+      // The provider stays on the first row. Off keeps the corner and the gap.
+      // When the row is full, or always, it is the last toolbar item instead.
       const visible = available.filter(item => !item.element.hasAttribute("data-hud-overflow-hidden"));
       const endLayoutWidth = includeEnd ? end.getBoundingClientRect().width : 0;
       let rowUsed = endLayoutWidth;
@@ -185,7 +198,9 @@ export function fitHudBar(bar: HTMLElement, end: HTMLElement, readItems: () => r
         } else break;
       }
       const overflows = fitted < visible.length;
-      bar.classList.toggle("hud-bar--end-attached", overflows || available.some(item => item.element.hasAttribute("data-hud-overflow-hidden")));
+      const place = hudBarEndPlace(options.endPlace?.());
+      const join = place === "always" || (place === "when-full" && (overflows || available.some(item => item.element.hasAttribute("data-hud-overflow-hidden"))));
+      bar.classList.toggle("hud-bar--end-attached", join);
       if (!overflows) {
         end.style.order = originalEndOrder;
         return;

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
-import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, TOOLBAR_BOTTOM_CLEARANCE_ID, TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
+import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, MAP_SOURCE_JOIN_ID, TOOLBAR_BOTTOM_CLEARANCE_ID, TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
 import { HUD_BUTTON_VISIBILITY_MIGRATION, HUD_BUTTON_VISIBILITY_STORAGE_KEY, loadHudButtonVisibility, saveHudButtonVisibility } from "../src/hudButtonVisibility.js";
 import { PERFORMANCE_HUD_VISIBILITY_MIGRATION, PERFORMANCE_HUD_VISIBILITY_STORAGE_KEY } from "../src/performance.js";
 const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new URL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
@@ -23,6 +23,13 @@ describe("host toolbar catalog and retained choices", () => {
     };
     const settings = create();
     expect(settings.inspect(MAP_SOURCE_HUD_LAYOUT_ID)).toMatchObject({ value: "compact", provenance: "default" });
+    expect(settings.inspect(MAP_SOURCE_JOIN_ID)).toMatchObject({ value: "off", provenance: "default" });
+    expect(settings.set(MAP_SOURCE_JOIN_ID, "when-full")).toEqual({ ok: true });
+    expect(settings.set(MAP_SOURCE_JOIN_ID, "always")).toEqual({ ok: true });
+    expect(settings.set(MAP_SOURCE_JOIN_ID, "beside").ok).toBe(false);
+    expect(settings.get(MAP_SOURCE_JOIN_ID)).toBe("always");
+    settings.reset(MAP_SOURCE_JOIN_ID);
+    expect(settings.get(MAP_SOURCE_JOIN_ID)).toBe("off");
     expect(settings.list()[0].home).toEqual({ tab: "interface", section: "toolbar", level: "main" });
     expect(settings.set(MAP_SOURCE_HUD_LAYOUT_ID, "expanded")).toEqual({ ok: true });
     expect(create().inspect(MAP_SOURCE_HUD_LAYOUT_ID)).toMatchObject({ value: "expanded", provenance: "user" });

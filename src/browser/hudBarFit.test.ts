@@ -4,7 +4,7 @@ import { fitHudBar, type HudBarFitItem } from "./hudBarFit.js";
 
 afterEach(() => { vi.unstubAllGlobals(); document.body.replaceChildren(); });
 
-function fixture(width = 300, creditWidth = 100) {
+function fixture(width = 300, creditWidth = 100, endPlace: "off" | "when-full" | "always" = "off") {
   const frames: FrameRequestCallback[] = [];
   const resizeCallbacks: ResizeObserverCallback[] = [];
   const disconnect = vi.fn();
@@ -49,7 +49,7 @@ function fixture(width = 300, creditWidth = 100) {
       return () => observer.disconnect();
     },
     subscribeResize(changed) { window.addEventListener("resize", changed); return () => window.removeEventListener("resize", changed); },
-  });
+  }, { endPlace: () => endPlace });
   const shown = () => items.filter(item => !item.element.hasAttribute("data-hud-overflow-hidden") && !item.element.closest("[hidden]")).map(item => item.element.id);
   const flush = () => { for (const callback of frames.splice(0)) callback(0); };
   return { bar, end, items, north, help, fps, renderer, input, fitting, shown, add, flush, disconnect,
@@ -201,20 +201,40 @@ describe("one-row toolbar fitting", () => {
     f.fitting.destroy();
   });
 
-  it("keeps the provider in the corner only when every wanted item fits", () => {
+  it("keeps the imagery provider in the corner, with the gap, unless joining is chosen", () => {
     const f = fixture(400);
     expect(f.shown()).toEqual(["north", "help", "fps", "renderer", "input"]);
     expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
     expect(f.end.style.order).toBe("");
     f.resize(300);
     expect(f.shown()).toEqual(["north", "help", "fps", "renderer"]);
-    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(true);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
     expect(f.end.style.order).toBe("");
-    expect([f.north, f.help, f.fps, f.renderer, f.input].map(element => element.style.order)).toEqual(["0", "1", "2", "3", "4"]);
     f.renderer.hidden = true;
     f.resize(400);
     expect(f.shown()).toEqual(["north", "help", "fps", "input"]);
     expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    f.fitting.destroy();
+    expect(f.end.style.order).toBe("");
+  });
+
+  it("joins the provider to the last shown control when the row is full", () => {
+    const f = fixture(400, 100, "when-full");
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    f.resize(300);
+    expect(f.shown()).toEqual(["north", "help", "fps", "renderer"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(true);
+    expect(f.end.style.order).toBe("");
+    expect([f.north, f.help, f.fps, f.renderer, f.input].map(element => element.style.order)).toEqual(["0", "1", "2", "3", "4"]);
+    f.fitting.destroy();
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+  });
+
+  it("joins the provider to the toolbar even when the corner has room", () => {
+    const f = fixture(400, 100, "always");
+    expect(f.shown()).toEqual(["north", "help", "fps", "renderer", "input"]);
+    expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(true);
+    expect(f.end.style.order).toBe("");
     f.fitting.destroy();
     expect(f.bar.classList.contains("hud-bar--end-attached")).toBe(false);
     expect(f.end.style.order).toBe("");
@@ -232,8 +252,18 @@ describe("one-row toolbar fitting", () => {
     f.fitting.destroy();
   });
 
+  it("keeps the corner when a pinned control wraps, and joins only when that is chosen", () => {
+    const separate = fixture(343, 500);
+    for (const item of separate.items) if (item.priority <= 2) item.reserveSpace = true;
+    separate.add("position", 300, 7, true);
+    separate.fitting.update(); separate.flush();
+    expect(separate.bar.classList.contains("hud-bar--end-attached")).toBe(false);
+    expect(separate.end.style.order).toBe("3");
+    separate.fitting.destroy();
+  });
+
   it("orders the provider after the last first-row item when a pinned control wraps", () => {
-    const f = fixture(343, 500);
+    const f = fixture(343, 500, "when-full");
     for (const item of f.items) if (item.priority <= 2) item.reserveSpace = true;
     const position = f.add("position", 300, 7, true);
     f.fitting.update(); f.flush();

@@ -1,6 +1,6 @@
 import type { SettingsRegistry } from "@foss-earth/ui/settings";
-import { readToolbarPreference, toolbarPriorityParameterId, toolbarSettingsIds, TOOLBAR_EDIT_PRIORITIES_ID, type ToolbarItemDescriptor } from "../settings.js";
-import { fitHudBar, type HudBarFitItem, type HudBarLayoutPorts } from "./hudBarFit.js";
+import { MAP_SOURCE_JOIN_ID, readToolbarPreference, toolbarPriorityParameterId, toolbarSettingsIds, TOOLBAR_EDIT_PRIORITIES_ID, type ToolbarItemDescriptor } from "../settings.js";
+import { fitHudBar, hudBarEndPlace, type HudBarFitItem, type HudBarLayoutPorts } from "./hudBarFit.js";
 export interface ToolbarFitPorts {
   /** Forward the host's existing layout authorities to the presentation fitter. */
   layout?: HudBarLayoutPorts;
@@ -36,8 +36,11 @@ export function bindToolbarFit(bar: HTMLElement, end: HTMLElement, settings: Set
     }
   };
   applyChoices();
-  const fit = fitHudBar(bar, end, () => readToolbarFitItems(settings, descriptors, ports.getElement), ports.layout);
-  const ids = toolbarSettingsIds(descriptors);
+  const fit = fitHudBar(bar, end, () => readToolbarFitItems(settings, descriptors, ports.getElement), ports.layout, {
+    endPlace: () => settings.has(MAP_SOURCE_JOIN_ID) ? hudBarEndPlace(settings.get(MAP_SOURCE_JOIN_ID)) : "off",
+  });
+  const ids = new Set<string>(toolbarSettingsIds(descriptors));
+  if (settings.has(MAP_SOURCE_JOIN_ID)) ids.add(MAP_SOURCE_JOIN_ID);
   const stop = settings.subscribe(changed => {
     if (![...changed].some(id => ids.has(id))) return;
     applyChoices(); ports.onChoicesChanged?.(); fit.update();

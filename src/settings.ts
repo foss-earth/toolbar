@@ -3,6 +3,8 @@ import { POSITION_COORDINATE_LABELS_ID, POSITION_ALTITUDE_ID, POSITION_ALTITUDE_
 export type ToolbarVisibility = "on" | "auto" | "off";
 export const INTERFACE_TAB = "interface";
 export const MAP_SOURCE_HUD_LAYOUT_ID = "interface.mapHud.layout";
+export const MAP_SOURCE_JOIN_ID = "interface.mapHud.join";
+export type MapSourceJoin = "off" | "when-full" | "always";
 /** Presentation only; host composition passes the choice to its map HUD. */
 export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
   id: MAP_SOURCE_HUD_LAYOUT_ID,
@@ -16,6 +18,22 @@ export const MAP_SOURCE_HUD_LAYOUT_PARAMETERS: readonly ParameterSpec[] = [{
   ],
   default: "compact",
   defaultReason: "Keep the standard map controls compact; expand only when requested.",
+  home: { tab: INTERFACE_TAB, section: "toolbar", level: "main" },
+  appliesLive: true,
+  source: "src/settings.ts",
+}, {
+  id: MAP_SOURCE_JOIN_ID,
+  label: "Imagery in the toolbar",
+  description: "Off leaves the imagery provider in the bottom-right corner, and the empty space stays between it and the toolbar. When the row is full moves the provider next to the last toolbar button once a wanted control is hidden or does not fit beside it. Always keeps the provider as the last toolbar button even when that corner has room.",
+  unit: "none",
+  kind: "choice",
+  choices: [
+    { id: "off", label: "Off", description: "Bottom-right corner. The empty space stays in the middle." },
+    { id: "when-full", label: "When the row is full", description: "Next to the last toolbar button when a wanted control is hidden or does not fit." },
+    { id: "always", label: "Always", description: "The last toolbar button, even when the corner has room." },
+  ],
+  default: "off",
+  defaultReason: "The empty space stays in the middle and the imagery provider stays in the bottom-right corner.",
   home: { tab: INTERFACE_TAB, section: "toolbar", level: "main" },
   appliesLive: true,
   source: "src/settings.ts",
