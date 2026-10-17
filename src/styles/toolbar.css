@@ -59,32 +59,6 @@ html[data-hud-home-clearance="true"] {
   pointer-events: none;
 }
 
-/* Split: the bar spans the window. Top sits above the tabs; bottom sits on the edge with the world. */
-html[data-world-presentation="split"] .hud-bar {
-  left: 0;
-  right: 0;
-  z-index: 16;
-  box-sizing: border-box;
-  padding: 2px 4px;
-}
-html[data-world-presentation="split"][data-toolbar-edge="top"] .hud-bar {
-  top: var(--foss-split-hud-top, env(safe-area-inset-top, 0px));
-  bottom: auto;
-}
-html[data-world-presentation="split"]:not([data-toolbar-edge="top"]) .hud-bar {
-  top: calc(var(--foss-world-top, 100%) - var(--foss-hud-bar-height, 28px));
-  bottom: auto;
-}
-html[data-world-presentation="split"] :is(.hud-chip, .hud-circle-button) {
-  padding: 2px 8px;
-}
-html[data-world-presentation="split"]:not([data-tabs-behind-toolbar="true"]) .hud-bar {
-  background: rgba(8, 15, 27, 0.94);
-}
-html[data-theme="light"][data-world-presentation="split"]:not([data-tabs-behind-toolbar="true"]) .hud-bar {
-  background: #fff;
-}
-
 .hud-bar > * {
   pointer-events: auto;
 }
@@ -137,16 +111,13 @@ html[data-world-edges="flush"] .hud-bar :is(.hud-chip, .hud-circle-button)::befo
 }
 
 /*
- * The first row stays on the bar's edge. Rows that a person's pinned controls
- * need go above it on a bar at the bottom, and below it on one at the top.
+ * The first row stays on the bottom edge. Rows that a person's pinned controls
+ * need go above it.
  */
 .hud-bar--fitted {
   flex-wrap: wrap-reverse;
   /* Share one cross-edge, so a taller map chip does not count as its own row. */
   align-items: end;
-}
-html[data-world-presentation="split"][data-toolbar-edge="top"] .hud-bar--fitted {
-  flex-wrap: wrap;
 }
 
 .hud-bar [data-hud-choice-hidden] {
