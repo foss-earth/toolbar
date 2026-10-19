@@ -65,6 +65,8 @@ export function toolbarVisibility(id: string, label: string, description: string
     description: `${description} On keeps it shown, wrapping if needed. Auto shows it when it fits in one row, in priority order. Off hides it.`,
     unit: "none",
     kind: "choice",
+    // "[On / A / Off] Bug report" reads as a list of switches; the label alone would not line up.
+    controlFirst: true,
     choices: [
       { id: "on", label: "On", icon: "line", description: "Always show, wrapping if needed." },
       { id: "auto", label: "Auto", shortLabel: "A", description: "Show when it fits in one row, in priority order." },

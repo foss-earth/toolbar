@@ -13,6 +13,13 @@ function setup(legacy?: string) {
   return { settings, records };
 }
 describe("host toolbar catalog and retained choices", () => {
+  it("draws each visibility row with its segments before its label", () => {
+    const { settings } = setup();
+    const visibility = items.flatMap(item => item.visibilityId ? [settings.spec(item.visibilityId)!] : []);
+    expect(visibility.length).toBeGreaterThan(0);
+    expect(visibility.every(spec => spec.controlFirst === true)).toBe(true);
+    expect(settings.spec(TOOLBAR_EDIT_PRIORITIES_ID)!.controlFirst).toBeUndefined();
+  });
   it("keeps map controls compact until explicitly expanded and retains that choice on reload", () => {
     const records = new Map<string, string>();
     const storage = { getItem: (key: string) => records.get(key) ?? null, setItem: (key: string, value: string) => { records.set(key, value); } };
