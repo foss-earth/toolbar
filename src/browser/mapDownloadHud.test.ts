@@ -28,6 +28,12 @@ describe("map download readout", () => {
     expect(speed?.textContent).toBe("+++MB/s");
     change(0);
     expect(speed?.textContent).toBe("000MB/s");
+    const writes = new MutationObserver(() => {});
+    writes.observe(speed!, { childList: true, characterData: true, subtree: true });
+    change(400_000);
+    change(0);
+    expect(writes.takeRecords()).toHaveLength(0);
+    writes.disconnect();
     detach();
     expect(off).toHaveBeenCalledOnce();
     expect(button.textContent).toBe("Google 3D Tiles");

@@ -23,14 +23,15 @@ export function attachMapDownloadSpeed(button: HTMLElement, source: MapDownloadS
   valueElement.className = "map-download-value";
   const unitElement = document.createElement("span");
   unitElement.className = "map-download-unit";
+  unitElement.textContent = "MB/s";
   speed.append(valueElement, unitElement);
   button.append(speed);
   const update = (bytes: number) => {
     const mb = Math.max(0, Number.isFinite(bytes) ? bytes / 1_000_000 : 0);
     // Three character numeric field; overflow is explicit rather than a false capped rate.
     const value = mb >= 1000 ? "+++" : String(Math.min(999, Math.round(mb))).padStart(3, "0");
-    valueElement.textContent = value;
-    unitElement.textContent = "MB/s";
+    // Text set to what it holds already still costs a layout.
+    if (valueElement.textContent !== value) valueElement.textContent = value;
     speed.title = `Map data received: ${mb.toFixed(2)} MB/s (last second; browser cache may contribute)`;
     speed.setAttribute("aria-label", speed.title);
   };
