@@ -381,6 +381,19 @@ html[data-world-edges="flush"] .hud-bar :is(.hud-chip, .hud-circle-button)::befo
   }
 }
 
+/*
+ * Interface → Toolbar → Activity outline: Still draws the reduced-motion
+ * outline. An animated custom property restyles and repaints the chip every
+ * frame. :where() keeps the comet's specificity, so the cascade is the same.
+ */
+:where(:root[data-hud-activity="still"]) .hud-chip.is-streaming,
+:where(:root[data-hud-activity="still"]) .hud-chip.hud-chip--gpu.is-rendering,
+:where(:root[data-hud-activity="still"]) .hud-chip-group.is-active .perf-chip[data-perf-metric="fps"] {
+  animation: none;
+  border-color: rgba(125, 211, 252, 0.55);
+  background: var(--hud-activity-fill, rgba(10, 14, 22, 0.76));
+}
+
 /* Green tint on the FPS chip while the scheduler is actively rendering. */
 .hud-chip-group.is-active .perf-chip[data-perf-metric="fps"] {
   --hud-activity-fill: rgba(5, 46, 22, 0.78);

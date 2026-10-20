@@ -54,6 +54,26 @@ export const TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS: readonly ParameterSpec[] = [{
   source: "src/settings.ts",
 }];
 
+export const TOOLBAR_ACTIVITY_OUTLINE_ID = "interface.toolbar.activityOutline";
+export type ToolbarActivityOutline = "spinning" | "still";
+/** Presentation only; the host marks the page's root with the choice, and the toolbar's styles follow it. */
+export const TOOLBAR_ACTIVITY_OUTLINE_PARAMETERS: readonly ParameterSpec[] = [{
+  id: TOOLBAR_ACTIVITY_OUTLINE_ID,
+  label: "Activity outline",
+  description: "How the chips that are at work are outlined: tiles loading, the GPU drawing, and the frame rate while frames are drawn. Spinning runs a light around the outline. Still draws the outline steady, as when the system asks for less motion, so the page does not restyle and repaint those chips every frame: a few percent of a phone's main thread while the view moves.",
+  unit: "none",
+  kind: "choice",
+  choices: [
+    { id: "spinning", label: "Spinning", description: "A light runs around the outline while the chip is at work." },
+    { id: "still", label: "Still", description: "A steady outline, which the page does not redraw every frame." },
+  ],
+  default: "spinning",
+  defaultReason: "The light running around the outline shows that work is going on.",
+  home: { tab: INTERFACE_TAB, section: "toolbar", level: "main" },
+  appliesLive: true,
+  source: "src/settings.ts",
+}];
+
 export const TOOLBAR_EDIT_PRIORITIES_ID = "interface.toolbar.editPriorities";
 export function toolbarPriorityParameterId(item: string): string { return `interface.toolbar.priority.${item}`; }
 

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { createSettingsRegistry } from "@foss-earth/ui/settings";
-import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, MAP_SOURCE_JOIN_ID, TOOLBAR_BOTTOM_CLEARANCE_ID, TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
+import { createToolbarParameters, toolbarPriorityParameterId, TOOLBAR_EDIT_PRIORITIES_ID, MAP_SOURCE_HUD_LAYOUT_ID, MAP_SOURCE_HUD_LAYOUT_PARAMETERS, MAP_SOURCE_JOIN_ID, TOOLBAR_ACTIVITY_OUTLINE_ID, TOOLBAR_ACTIVITY_OUTLINE_PARAMETERS, TOOLBAR_BOTTOM_CLEARANCE_ID, TOOLBAR_BOTTOM_CLEARANCE_PARAMETERS, type ToolbarItemDescriptor } from "../src/settings.js";
 import { HUD_BUTTON_VISIBILITY_MIGRATION, HUD_BUTTON_VISIBILITY_STORAGE_KEY, loadHudButtonVisibility, saveHudButtonVisibility } from "../src/hudButtonVisibility.js";
 import { PERFORMANCE_HUD_VISIBILITY_MIGRATION, PERFORMANCE_HUD_VISIBILITY_STORAGE_KEY } from "../src/performance.js";
 const items: ToolbarItemDescriptor[] = JSON.parse(readFileSync(new URL("../fixtures/earth-toolbar.json", import.meta.url), "utf8"));
@@ -61,6 +61,36 @@ describe("host toolbar catalog and retained choices", () => {
     expect(create().get(TOOLBAR_BOTTOM_CLEARANCE_ID)).toBe(true);
     settings.reset(TOOLBAR_BOTTOM_CLEARANCE_ID);
     expect(create().get(TOOLBAR_BOTTOM_CLEARANCE_ID)).toBe(false);
+  });
+
+  it("spins the activity outline until a still one is chosen", () => {
+    const records = new Map<string, string>();
+    const storage = { getItem: (key: string) => records.get(key) ?? null, setItem: (key: string, value: string) => { records.set(key, value); } };
+    const create = () => {
+      const registry = createSettingsRegistry({ storage });
+      registry.register(TOOLBAR_ACTIVITY_OUTLINE_PARAMETERS);
+      return registry;
+    };
+    const settings = create();
+    expect(settings.inspect(TOOLBAR_ACTIVITY_OUTLINE_ID)).toMatchObject({ value: "spinning", provenance: "default" });
+    expect(settings.list()[0].home).toEqual({ tab: "interface", section: "toolbar", level: "main" });
+    expect(settings.set(TOOLBAR_ACTIVITY_OUTLINE_ID, "still")).toEqual({ ok: true });
+    expect(create().get(TOOLBAR_ACTIVITY_OUTLINE_ID)).toBe("still");
+    expect(settings.set(TOOLBAR_ACTIVITY_OUTLINE_ID, "off").ok).toBe(false);
+    settings.reset(TOOLBAR_ACTIVITY_OUTLINE_ID);
+    expect(create().get(TOOLBAR_ACTIVITY_OUTLINE_ID)).toBe("spinning");
+  });
+
+  it("draws the still activity outline as the reduced-motion one, on the chips the comet runs on and at its specificity", () => {
+    const css = readFileSync(new URL("../src/styles/toolbar.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+    const selectors = (list: string) => list.split(",").map(each => each.trim());
+    const declarations = (body: string) => body.split(";").map(each => each.trim()).filter(Boolean);
+    const comet = /\n([^{}]+)\{[^}]*animation: hud-chip-spin[^}]*\}/.exec(css)!;
+    const reduced = /@media \(prefers-reduced-motion: reduce\) \{\s*([^{}]*\.hud-chip\.is-streaming[^{}]*)\{([^}]*)\}/.exec(css)!;
+    const still = /\n([^{}]*:where\(:root\[data-hud-activity="still"\]\)[^{}]*)\{([^}]*)\}/.exec(css)!;
+    expect(selectors(reduced[1])).toEqual(selectors(comet[1]));
+    expect(selectors(still[1])).toEqual(selectors(comet[1]).map(selector => `:where(:root[data-hud-activity="still"]) ${selector}`));
+    expect(declarations(still[2])).toEqual(declarations(reduced[2]));
   });
 
   it("preserves the Earth seventeen priorities and on/auto/off defaults in Interface", () => {
